@@ -7,7 +7,7 @@ import { User } from '@supabase/supabase-js'
 interface DebugInfo {
   user: User | null;
   userError: Error | null;
-  session: { user: User; expires_at: number } | null;
+  session: { user: User; expires_at?: number; access_token?: string; refresh_token?: string } | null;
   sessionError: Error | null;
   dbTest: { data: unknown[] | null; error: Error | null };
   envInfo: {
@@ -42,7 +42,7 @@ export default function DeployedDebugPage() {
           .limit(1)
         dbTest = { data, error }
       } catch (e) {
-        dbTest = { error: e }
+        dbTest = { data: null, error: e as Error }
       }
 
       // Get environment info (what the client can see)
@@ -120,7 +120,7 @@ export default function DeployedDebugPage() {
                 <p><strong>Email:</strong> {debugInfo.user.email}</p>
                 <p><strong>ID:</strong> <code className="bg-gray-100 px-2 py-1 rounded text-xs">{debugInfo.user.id}</code></p>
                 <p><strong>Created:</strong> {new Date(debugInfo.user.created_at).toLocaleString()}</p>
-                <p><strong>Last Sign In:</strong> {new Date(debugInfo.user.last_sign_in_at).toLocaleString()}</p>
+                <p><strong>Last Sign In:</strong> {debugInfo.user.last_sign_in_at ? new Date(debugInfo.user.last_sign_in_at).toLocaleString() : 'N/A'}</p>
               </div>
             ) : (
               <p className="text-gray-600">No user authenticated</p>
@@ -135,7 +135,7 @@ export default function DeployedDebugPage() {
             ) : debugInfo?.session ? (
               <div className="space-y-2">
                 <p><strong>User Email:</strong> {debugInfo.session.user.email}</p>
-                <p><strong>Expires At:</strong> {new Date(debugInfo.session.expires_at! * 1000).toLocaleString()}</p>
+                <p><strong>Expires At:</strong> {debugInfo.session.expires_at ? new Date(debugInfo.session.expires_at * 1000).toLocaleString() : 'N/A'}</p>
                 <p><strong>Access Token Length:</strong> {debugInfo.session.access_token?.length || 0} characters</p>
                 <p><strong>Refresh Token Length:</strong> {debugInfo.session.refresh_token?.length || 0} characters</p>
               </div>
@@ -148,7 +148,7 @@ export default function DeployedDebugPage() {
           <div className="bg-white p-6 rounded-lg shadow">
             <h2 className="text-xl font-semibold mb-4">Database Connection Test</h2>
             {debugInfo?.dbTest?.error ? (
-              <p className="text-red-600">Error: {debugInfo.dbTest.error.message || debugInfo.dbTest.error}</p>
+              <p className="text-red-600">Error: {debugInfo.dbTest.error instanceof Error ? debugInfo.dbTest.error.message : String(debugInfo.dbTest.error)}</p>
             ) : (
               <p className="text-green-600">Database connection successful</p>
             )}
