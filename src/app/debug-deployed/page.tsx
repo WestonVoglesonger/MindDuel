@@ -2,17 +2,25 @@
 
 import { useEffect, useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
+import { User } from '@supabase/supabase-js'
+
+interface DebugInfo {
+  user: User | null;
+  userError: Error | null;
+  session: { user: User; expires_at: number } | null;
+  sessionError: Error | null;
+  dbTest: { data: unknown[] | null; error: Error | null };
+  envInfo: {
+    supabaseUrl: string | undefined;
+    hasAnonKey: boolean;
+    anonKeyLength: number;
+    jwtPayload: Record<string, unknown> | null;
+  };
+  timestamp: string;
+}
 
 export default function DeployedDebugPage() {
-  const [debugInfo, setDebugInfo] = useState<{
-    user: any;
-    userError: any;
-    session: any;
-    sessionError: any;
-    dbTest: any;
-    envInfo: any;
-    timestamp: string;
-  } | null>(null)
+  const [debugInfo, setDebugInfo] = useState<DebugInfo | null>(null)
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
