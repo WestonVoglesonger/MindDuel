@@ -1,266 +1,228 @@
-// Database types (will be generated from Supabase)
-export interface Database {
+export type Json =
+  | string
+  | number
+  | boolean
+  | null
+  | { [key: string]: Json | undefined }
+  | Json[]
+
+export type Database = {
   public: {
     Tables: {
-      users: {
-        Row: {
-          id: string
-          username: string
-          display_name: string | null
-          avatar_url: string | null
-          elo_rating: number
-          games_played: number
-          games_won: number
-          created_at: string
-          updated_at: string
-        }
-        Insert: {
-          id: string
-          username: string
-          display_name?: string | null
-          avatar_url?: string | null
-          elo_rating?: number
-          games_played?: number
-          games_won?: number
-          created_at?: string
-          updated_at?: string
-        }
-        Update: {
-          id?: string
-          username?: string
-          display_name?: string | null
-          avatar_url?: string | null
-          elo_rating?: number
-          games_played?: number
-          games_won?: number
-          created_at?: string
-          updated_at?: string
-        }
-      }
       categories: {
         Row: {
+          created_at: string
           id: string
           name: string
-          description: string | null
-          created_at: string
         }
         Insert: {
+          created_at?: string
           id?: string
           name: string
-          description?: string | null
-          created_at?: string
         }
         Update: {
+          created_at?: string
           id?: string
           name?: string
-          description?: string | null
-          created_at?: string
         }
-      }
-      questions: {
-        Row: {
-          id: string
-          category_id: string
-          question_text: string
-          correct_answer: string
-          answer_variants: string[]
-          point_value: number
-          difficulty: 'easy' | 'medium' | 'hard'
-          air_date: string | null
-          source: string
-          created_at: string
-        }
-        Insert: {
-          id?: string
-          category_id: string
-          question_text: string
-          correct_answer: string
-          answer_variants: string[]
-          point_value: number
-          difficulty: 'easy' | 'medium' | 'hard'
-          air_date?: string | null
-          source: string
-          created_at?: string
-        }
-        Update: {
-          id?: string
-          category_id?: string
-          question_text?: string
-          correct_answer?: string
-          answer_variants?: string[]
-          point_value?: number
-          difficulty?: 'easy' | 'medium' | 'hard'
-          air_date?: string | null
-          source?: string
-          created_at?: string
-        }
+        Relationships: []
       }
       game_sessions: {
         Row: {
+          current_question_id: string | null
+          current_round: string
           id: string
           player1_id: string
-          player2_id: string
-          status: 'waiting' | 'in_progress' | 'completed' | 'abandoned'
           player1_score: number
+          player2_id: string | null
           player2_score: number
-          current_turn_player_id: string | null
-          board_state: any
-          winner_id: string | null
-          created_at: string
-          completed_at: string | null
+          state: Json
+          status: Database['public']['Enums']['game_status']
+          turn_player_id: string | null
+          updated_at: string
         }
         Insert: {
+          current_question_id?: string | null
+          current_round?: string
           id?: string
           player1_id: string
-          player2_id: string
-          status?: 'waiting' | 'in_progress' | 'completed' | 'abandoned'
           player1_score?: number
+          player2_id?: string | null
           player2_score?: number
-          current_turn_player_id?: string | null
-          board_state?: any
-          winner_id?: string | null
-          created_at?: string
-          completed_at?: string | null
+          state?: Json
+          status?: Database['public']['Enums']['game_status']
+          turn_player_id?: string | null
+          updated_at?: string
         }
         Update: {
+          current_question_id?: string | null
+          current_round?: string
           id?: string
           player1_id?: string
-          player2_id?: string
-          status?: 'waiting' | 'in_progress' | 'completed' | 'abandoned'
           player1_score?: number
+          player2_id?: string | null
           player2_score?: number
-          current_turn_player_id?: string | null
-          board_state?: any
-          winner_id?: string | null
-          created_at?: string
-          completed_at?: string | null
+          state?: Json
+          status?: Database['public']['Enums']['game_status']
+          turn_player_id?: string | null
+          updated_at?: string
         }
-      }
-      game_questions: {
-        Row: {
-          id: string
-          game_session_id: string
-          question_id: string
-          position: number
-          answered_by: string | null
-          is_correct: boolean | null
-          answered_at: string | null
-        }
-        Insert: {
-          id?: string
-          game_session_id: string
-          question_id: string
-          position: number
-          answered_by?: string | null
-          is_correct?: boolean | null
-          answered_at?: string | null
-        }
-        Update: {
-          id?: string
-          game_session_id?: string
-          question_id?: string
-          position?: number
-          answered_by?: string | null
-          is_correct?: boolean | null
-          answered_at?: string | null
-        }
-      }
-      buzzer_events: {
-        Row: {
-          id: string
-          game_session_id: string
-          question_id: string
-          player_id: string
-          buzz_timestamp: string
-          server_timestamp: string
-          was_first: boolean | null
-        }
-        Insert: {
-          id?: string
-          game_session_id: string
-          question_id: string
-          player_id: string
-          buzz_timestamp: string
-          server_timestamp?: string
-          was_first?: boolean | null
-        }
-        Update: {
-          id?: string
-          game_session_id?: string
-          question_id?: string
-          player_id?: string
-          buzz_timestamp?: string
-          server_timestamp?: string
-          was_first?: boolean | null
-        }
-      }
-      match_history: {
-        Row: {
-          id: string
-          game_session_id: string
-          player1_id: string
-          player2_id: string
-          player1_score: number
-          player2_score: number
-          player1_elo_before: number
-          player1_elo_after: number
-          player2_elo_before: number
-          player2_elo_after: number
-          winner_id: string | null
-          completed_at: string
-        }
-        Insert: {
-          id?: string
-          game_session_id: string
-          player1_id: string
-          player2_id: string
-          player1_score: number
-          player2_score: number
-          player1_elo_before: number
-          player1_elo_after: number
-          player2_elo_before: number
-          player2_elo_after: number
-          winner_id?: string | null
-          completed_at?: string
-        }
-        Update: {
-          id?: string
-          game_session_id?: string
-          player1_id?: string
-          player2_id?: string
-          player1_score?: number
-          player2_score?: number
-          player1_elo_before?: number
-          player1_elo_after?: number
-          player2_elo_before?: number
-          player2_elo_after?: number
-          winner_id?: string | null
-          completed_at?: string
-        }
+        Relationships: [
+          {
+            foreignKeyName: 'game_sessions_current_question_id_fkey'
+            columns: ['current_question_id']
+            isOneToOne: false
+            referencedRelation: 'questions'
+            referencedColumns: ['id']
+          },
+          {
+            foreignKeyName: 'game_sessions_player1_id_fkey'
+            columns: ['player1_id']
+            isOneToOne: false
+            referencedRelation: 'users'
+            referencedColumns: ['id']
+          },
+          {
+            foreignKeyName: 'game_sessions_player2_id_fkey'
+            columns: ['player2_id']
+            isOneToOne: false
+            referencedRelation: 'users'
+            referencedColumns: ['id']
+          },
+          {
+            foreignKeyName: 'game_sessions_turn_player_id_fkey'
+            columns: ['turn_player_id']
+            isOneToOne: false
+            referencedRelation: 'users'
+            referencedColumns: ['id']
+          },
+        ]
       }
       matchmaking_queue: {
         Row: {
+          created_at: string
           id: string
-          user_id: string
-          elo_rating: number
-          joined_at: string
-          status: 'waiting' | 'matched' | 'cancelled'
+          player_id: string
+          status: Database['public']['Enums']['queue_status']
         }
         Insert: {
+          created_at?: string
           id?: string
-          user_id: string
-          elo_rating: number
-          joined_at?: string
-          status?: 'waiting' | 'matched' | 'cancelled'
+          player_id: string
+          status?: Database['public']['Enums']['queue_status']
         }
         Update: {
+          created_at?: string
           id?: string
-          user_id?: string
-          elo_rating?: number
-          joined_at?: string
-          status?: 'waiting' | 'matched' | 'cancelled'
+          player_id?: string
+          status?: Database['public']['Enums']['queue_status']
         }
+        Relationships: [
+          {
+            foreignKeyName: 'matchmaking_queue_player_id_fkey'
+            columns: ['player_id']
+            isOneToOne: false
+            referencedRelation: 'users'
+            referencedColumns: ['id']
+          },
+        ]
       }
+      questions: {
+        Row: {
+          answer: string
+          category_id: string
+          clue: string
+          created_at: string
+          difficulty: number
+          id: string
+          round: string
+          value: number
+        }
+        Insert: {
+          answer: string
+          category_id: string
+          clue: string
+          created_at?: string
+          difficulty?: number
+          id?: string
+          round: string
+          value: number
+        }
+        Update: {
+          answer?: string
+          category_id?: string
+          clue?: string
+          created_at?: string
+          difficulty?: number
+          id?: string
+          round?: string
+          value?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: 'questions_category_id_fkey'
+            columns: ['category_id']
+            isOneToOne: false
+            referencedRelation: 'categories'
+            referencedColumns: ['id']
+          },
+        ]
+      }
+      users: {
+        Row: {
+          avatar_url: string | null
+          created_at: string
+          elo_rating: number
+          id: string
+          username: string
+        }
+        Insert: {
+          avatar_url?: string | null
+          created_at?: string
+          elo_rating?: number
+          id: string
+          username: string
+        }
+        Update: {
+          avatar_url?: string | null
+          created_at?: string
+          elo_rating?: number
+          id?: string
+          username?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: 'users_id_fkey'
+            columns: ['id']
+            isOneToOne: true
+            referencedRelation: 'users'
+            referencedColumns: ['id']
+          },
+        ]
+      }
+    }
+    Views: {
+      [_ in never]: never
+    }
+    Functions: {
+      [_ in never]: never
+    }
+    Enums: {
+      game_status: 'waiting_for_players' | 'in_progress' | 'completed' | 'cancelled'
+      queue_status: 'waiting' | 'matched' | 'cancelled'
+    }
+    CompositeTypes: {
+      [_ in never]: never
     }
   }
 }
+
+type PublicSchema = Database[Extract<keyof Database, 'public'>]
+
+export type Tables<
+  PublicTableName extends keyof PublicSchema['Tables']
+> = PublicSchema['Tables'][PublicTableName]['Row']
+
+export type Enums<
+  PublicEnumName extends keyof PublicSchema['Enums']
+> = PublicSchema['Enums'][PublicEnumName]
