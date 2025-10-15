@@ -2,17 +2,17 @@
 
 import { useEffect, useState, useCallback } from 'react'
 import { createClient } from '@/lib/supabase/client'
-import { GameSession, GameResult } from '@/types/game.types'
+import { GameSession, GameResult, Question } from '@/types/game.types'
 import { GameService } from '@/lib/services/game.service'
 
 interface LocalGameState {
-  currentQuestion: any // Using any for now since this might be complex
+  currentQuestion: Question | null
   selectedPosition: number | null
   buzzerEnabled: boolean
   buzzerWinner: string | null
   answerSubmitted: boolean
   timeRemaining: number
-  gamePhase: 'waiting' | 'question' | 'answering' | 'buzzer' | 'completed'
+  gamePhase: 'waiting' | 'question' | 'question_reveal' | 'answering' | 'buzzer' | 'buzzer_active' | 'scoring' | 'completed'
 }
 
 interface UseRealtimeGameOptions {
@@ -135,7 +135,7 @@ export function useRealtimeGame({
               setGameState(prev => ({
                 ...prev,
                 buzzerEnabled: false,
-                buzzerWinner: winnerId,
+                buzzerWinner: winnerId.player_id,
                 gamePhase: 'answering'
               }))
             }

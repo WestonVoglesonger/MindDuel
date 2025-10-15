@@ -81,6 +81,13 @@ export type BuzzerEvent = {
   was_first: boolean | null
 }
 
+export type BuzzerEventInsert = {
+  game_session_id: string
+  question_id: string
+  player_id: string
+  buzz_timestamp?: string
+}
+
 export type PlayerInGame = {
   id: string
   username: string

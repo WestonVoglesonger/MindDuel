@@ -35,18 +35,8 @@ export default function LobbyPage() {
 
         const userData = await userService.getUserById(authUser.id)
         if (userData) {
-          // Transform database user to Player interface
-          const transformedUser = {
-            id: userData.id,
-            username: userData.username,
-            displayName: userData.display_name || userData.username,
-            avatarUrl: userData.avatar_url,
-            eloRating: userData.elo_rating,
-            gamesPlayed: 0, // TODO: Add games played/won to database
-            gamesWon: 0,
-            isOnline: true
-          }
-          setUser(transformedUser)
+          // User data is already transformed to Player interface by userService
+          setUser(userData)
         } else {
           setError('User profile not found')
         }
@@ -65,18 +55,8 @@ export default function LobbyPage() {
     async function loadOnlinePlayers() {
       try {
         const players = await userService.getLeaderboard(10)
-        // Transform database users to Player interface
-        const transformedPlayers = players.map(player => ({
-          id: player.id,
-          username: player.username,
-          displayName: player.display_name || player.username,
-          avatarUrl: player.avatar_url,
-          eloRating: player.elo_rating,
-          gamesPlayed: 0, // TODO: Add games played/won to database
-          gamesWon: 0,
-          isOnline: true
-        }))
-        setOnlinePlayers(transformedPlayers)
+        // Players are already transformed to Player interface by userService
+        setOnlinePlayers(players)
       } catch (err) {
         console.error('Error loading online players:', err)
       }

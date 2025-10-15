@@ -72,16 +72,16 @@ export default async function LeaderboardPage() {
                     <span className="text-2xl font-bold">#2</span>
                   </div>
                   <Avatar className="h-16 w-16 mx-auto mb-4">
-                    <AvatarImage src={leaderboard[1].avatar_url || ''} alt={leaderboard[1].display_name || leaderboard[1].username} />
+                    <AvatarImage src={leaderboard[1].avatarUrl || ''} alt={leaderboard[1].displayName || leaderboard[1].username} />
                     <AvatarFallback className="text-xl">
-                      {(leaderboard[1].display_name || leaderboard[1].username).charAt(0).toUpperCase()}
+                      {(leaderboard[1].displayName || leaderboard[1].username).charAt(0).toUpperCase()}
                     </AvatarFallback>
                   </Avatar>
                   <h3 className="text-xl font-bold mb-2">
-                    {leaderboard[1].display_name || leaderboard[1].username}
+                    {leaderboard[1].displayName || leaderboard[1].username}
                   </h3>
                   <p className="text-lg font-semibold">
-                    ELO: {leaderboard[1].elo_rating}
+                    ELO: {leaderboard[1].eloRating}
                   </p>
                 </CardContent>
               </Card>
@@ -96,16 +96,16 @@ export default async function LeaderboardPage() {
                     <span className="text-3xl font-bold">#1</span>
                   </div>
                   <Avatar className="h-20 w-20 mx-auto mb-4">
-                    <AvatarImage src={leaderboard[0].avatar_url || ''} alt={leaderboard[0].display_name || leaderboard[0].username} />
+                    <AvatarImage src={leaderboard[0].avatarUrl || ''} alt={leaderboard[0].displayName || leaderboard[0].username} />
                     <AvatarFallback className="text-2xl">
-                      {(leaderboard[0].display_name || leaderboard[0].username).charAt(0).toUpperCase()}
+                      {(leaderboard[0].displayName || leaderboard[0].username).charAt(0).toUpperCase()}
                     </AvatarFallback>
                   </Avatar>
                   <h3 className="text-2xl font-bold mb-2">
-                    {leaderboard[0].display_name || leaderboard[0].username}
+                    {leaderboard[0].displayName || leaderboard[0].username}
                   </h3>
                   <p className="text-xl font-semibold">
-                    ELO: {leaderboard[0].elo_rating}
+                    ELO: {leaderboard[0].eloRating}
                   </p>
                 </CardContent>
               </Card>
@@ -120,16 +120,16 @@ export default async function LeaderboardPage() {
                     <span className="text-2xl font-bold">#3</span>
                   </div>
                   <Avatar className="h-16 w-16 mx-auto mb-4">
-                    <AvatarImage src={leaderboard[2].avatar_url || ''} alt={leaderboard[2].display_name || leaderboard[2].username} />
+                    <AvatarImage src={leaderboard[2].avatarUrl || ''} alt={leaderboard[2].displayName || leaderboard[2].username} />
                     <AvatarFallback className="text-xl">
-                      {(leaderboard[2].display_name || leaderboard[2].username).charAt(0).toUpperCase()}
+                      {(leaderboard[2].displayName || leaderboard[2].username).charAt(0).toUpperCase()}
                     </AvatarFallback>
                   </Avatar>
                   <h3 className="text-xl font-bold mb-2">
-                    {leaderboard[2].display_name || leaderboard[2].username}
+                    {leaderboard[2].displayName || leaderboard[2].username}
                   </h3>
                   <p className="text-lg font-semibold">
-                    ELO: {leaderboard[2].elo_rating}
+                    ELO: {leaderboard[2].eloRating}
                   </p>
                 </CardContent>
               </Card>
@@ -152,7 +152,7 @@ export default async function LeaderboardPage() {
             <div className="space-y-2">
               {leaderboard.map((player, index) => {
                 const rank = index + 1
-                const eloTier = getEloTier(player.elo_rating)
+                const eloTier = getEloTier(player.eloRating)
                 const isCurrentUser = authUser?.id === player.id
 
                 return (
@@ -174,22 +174,22 @@ export default async function LeaderboardPage() {
                       </div>
                       
                       <Avatar className="h-10 w-10">
-                        <AvatarImage src={player.avatar_url || ''} alt={player.display_name || player.username} />
+                        <AvatarImage src={player.avatarUrl || ''} alt={player.displayName || player.username} />
                         <AvatarFallback>
-                          {(player.display_name || player.username).charAt(0).toUpperCase()}
+                          {(player.displayName || player.username).charAt(0).toUpperCase()}
                         </AvatarFallback>
                       </Avatar>
                       
                       <div>
                         <h3 className="font-semibold">
-                          {player.display_name || player.username}
+                          {player.displayName || player.username}
                         </h3>
                         <div className="flex items-center space-x-2">
                           <Badge variant="secondary" className={`text-xs ${eloTier.color} text-white`}>
                             {eloTier.tier}
                           </Badge>
                           <span className="text-sm text-muted-foreground">
-                            {player.games_played} games
+                            {player.gamesPlayed} games
                           </span>
                         </div>
                       </div>
@@ -197,10 +197,10 @@ export default async function LeaderboardPage() {
                     
                     <div className="text-right">
                       <p className="text-lg font-bold text-blue-600">
-                        {player.elo_rating}
+                        {player.eloRating}
                       </p>
                       <p className="text-sm text-muted-foreground">
-                        {player.games_played > 0 ? Math.round((player.games_won / player.games_played) * 100) : 0}% win rate
+                        {player.gamesPlayed > 0 ? Math.round((player.gamesWon / player.gamesPlayed) * 100) : 0}% win rate
                       </p>
                     </div>
                   </div>

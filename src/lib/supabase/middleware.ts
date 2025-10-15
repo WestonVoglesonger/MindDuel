@@ -1,6 +1,16 @@
 import { createServerClient } from '@supabase/ssr'
-import { NextResponse, type NextRequest, type CookieOptions } from 'next/server'
+import { NextResponse, type NextRequest } from 'next/server'
 import { Database } from '@/types/supabase.types'
+
+// Define CookieOptions locally as it's not exported from 'next/server'
+interface CookieOptions {
+  path?: string
+  maxAge?: number
+  expires?: Date
+  httpOnly?: boolean
+  secure?: boolean
+  sameSite?: boolean | 'lax' | 'strict' | 'none'
+}
 
 export async function updateSession(request: NextRequest) {
   let supabaseResponse = NextResponse.next({

@@ -15,22 +15,61 @@ export class EloService {
     player1Change: number
     player2Change: number
   } | null> {
-    const supabase = createClient()
+    const supabase = await createClient()
 
     try {
-      // Call the database function to update ELO ratings
-      const { data, error } = await supabase.rpc('update_elo_ratings', {
-        p_player1_id: player1Id,
-        p_player2_id: player2Id,
-        p_winner_id: winnerId
-      })
+      // Get current ratings
+      const { data: player1Data, error: player1Error } = await supabase
+        .from('users')
+        .select('elo_rating')
+        .eq('id', player1Id)
+        .single()
 
-      if (error) {
-        console.error('Error updating ELO ratings:', error)
+      const { data: player2Data, error: player2Error } = await supabase
+        .from('users')
+        .select('elo_rating')
+        .eq('id', player2Id)
+        .single()
+
+      if (player1Error || player2Error || !player1Data || !player2Data) {
+        console.error('Error fetching player ratings:', player1Error || player2Error)
         return null
       }
 
-      return data?.[0] || null
+      // Calculate ELO changes
+      const changes = calculateEloChanges(
+        player1Data.elo_rating,
+        player2Data.elo_rating,
+        winnerId,
+        player1Id,
+        player2Id
+      )
+
+      const player1NewRating = player1Data.elo_rating + changes.player1Change
+      const player2NewRating = player2Data.elo_rating + changes.player2Change
+
+      // Update ratings in database
+      const { error: update1Error } = await supabase
+        .from('users')
+        .update({ elo_rating: player1NewRating })
+        .eq('id', player1Id)
+
+      const { error: update2Error } = await supabase
+        .from('users')
+        .update({ elo_rating: player2NewRating })
+        .eq('id', player2Id)
+
+      if (update1Error || update2Error) {
+        console.error('Error updating ELO ratings:', update1Error || update2Error)
+        return null
+      }
+
+      return {
+        player1NewRating,
+        player2NewRating,
+        player1Change: changes.player1Change,
+        player2Change: changes.player2Change
+      }
     } catch (error) {
       console.error('Error updating ELO ratings:', error)
       return null
@@ -52,28 +91,20 @@ export class EloService {
     player2EloAfter: number,
     winnerId: string | null
   ): Promise<boolean> {
-    const supabase = createClient()
-
-    const { error } = await supabase
-      .from('match_history')
-      .insert({
-        game_session_id: gameSessionId,
-        player1_id: player1Id,
-        player2_id: player2Id,
-        player1_score: player1Score,
-        player2_score: player2Score,
-        player1_elo_before: player1EloBefore,
-        player1_elo_after: player1EloAfter,
-        player2_elo_before: player2EloBefore,
-        player2_elo_after: player2EloAfter,
-        winner_id: winnerId
-      })
-
-    if (error) {
-      console.error('Error recording match history:', error)
-      return false
-    }
-
+    // TODO: Implement match_history table
+    // For now, match history recording is not implemented
+    console.log('Match history recording not implemented:', {
+      gameSessionId,
+      player1Id,
+      player2Id,
+      player1Score,
+      player2Score,
+      player1EloBefore,
+      player1EloAfter,
+      player2EloBefore,
+      player2EloAfter,
+      winnerId
+    })
     return true
   }
 

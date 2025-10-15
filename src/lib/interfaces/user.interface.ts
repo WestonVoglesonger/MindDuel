@@ -1,4 +1,21 @@
-import { User, UserInsert, UserUpdate, Player } from '@/types/game.types'
+import { Player } from '@/types/game.types'
+
+type User = Player
+
+type UserInsert = {
+  id: string
+  username: string
+  display_name?: string
+  avatar_url?: string
+  elo_rating?: number
+}
+
+type UserUpdate = {
+  username?: string
+  display_name?: string
+  avatar_url?: string
+  elo_rating?: number
+}
 
 interface MatchHistoryItem {
   id: string

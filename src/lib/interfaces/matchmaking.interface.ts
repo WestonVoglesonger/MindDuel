@@ -1,4 +1,9 @@
-import { MatchmakingStatus } from '@/types/game.types'
+interface MatchmakingStatus {
+  status: 'idle' | 'searching' | 'found' | 'matched' | 'error'
+  eloRange: number
+  timeElapsed: number
+  estimatedWaitTime: number
+}
 
 export interface MatchmakingServiceInterface {
   /**

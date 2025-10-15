@@ -108,18 +108,8 @@ export default function GamePage({ params }: GamePageProps) {
           setError('User not found')
           return
         }
-        // Transform database user to Player interface
-        const transformedUser = {
-          id: userData.id,
-          username: userData.username,
-          displayName: userData.display_name || userData.username,
-          avatarUrl: userData.avatar_url || null,
-          eloRating: userData.elo_rating,
-          gamesPlayed: 0, // TODO: Add games played/won to database
-          gamesWon: 0,
-          isOnline: true
-        }
-        setUser(transformedUser)
+        // User data is already transformed to Player interface by userService
+        setUser(userData)
 
         // Load game session
         const session = await gameService.getGameSession(params.gameId)
@@ -133,18 +123,8 @@ export default function GamePage({ params }: GamePageProps) {
         if (opponentId) {
           const opponentData = await userService.getUserById(opponentId)
           if (opponentData) {
-            // Transform database user to Player interface
-            const transformedOpponent = {
-              id: opponentData.id,
-              username: opponentData.username,
-              displayName: opponentData.display_name || opponentData.username,
-              avatarUrl: opponentData.avatar_url || null,
-              eloRating: opponentData.elo_rating,
-              gamesPlayed: 0, // TODO: Add games played/won to database
-              gamesWon: 0,
-              isOnline: true
-            }
-            setOpponent(transformedOpponent)
+            // Opponent data is already transformed to Player interface by userService
+            setOpponent(opponentData)
           }
         }
 
@@ -190,9 +170,9 @@ export default function GamePage({ params }: GamePageProps) {
   }
 
   const handleBuzzerClick = async () => {
-    if (!gameState.current_question) return
+    if (!gameState.currentQuestion) return
 
-    const success = await handleBuzzerPress(gameState.current_question.id)
+    const success = await handleBuzzerPress(gameState.currentQuestion.id)
     if (success) {
       pressBuzzer()
       startAnswerTimer()
@@ -200,10 +180,10 @@ export default function GamePage({ params }: GamePageProps) {
   }
 
   const handleAnswerSubmit = async (answer: string) => {
-    if (!gameState.current_question) return
+    if (!gameState.currentQuestion) return
 
     try {
-      const result = await handleAnswerSubmission(gameState.current_question.id, answer)
+      const result = await handleAnswerSubmission(gameState.currentQuestion.id, answer)
       
       if (result.isCorrect) {
         // Correct answer - continue to next question
@@ -340,15 +320,15 @@ export default function GamePage({ params }: GamePageProps) {
         </div>
 
         {/* Question Card */}
-        {gameState.current_question && (
+        {gameState.currentQuestion && (
           <QuestionCard
-            question={gameState.current_question}
-            categoryName={gameState.current_question.category_id}
-            pointValue={gameState.current_question.point_value}
-            isOpen={!!gameState.current_question}
+            question={gameState.currentQuestion}
+            categoryName={gameState.currentQuestion.category_id}
+            pointValue={gameState.currentQuestion.point_value}
+            isOpen={!!gameState.currentQuestion}
             onClose={() => resetGameState()}
             buzzerEnabled={buzzerEnabled}
-            buzzerWinner={gameState.buzzed_player_id}
+            buzzerWinner={gameState.buzzerWinner}
             timeRemaining={answerTimeRemaining}
             onBuzzerPress={handleBuzzerClick}
             onAnswerSubmit={handleAnswerSubmit}
@@ -362,7 +342,7 @@ export default function GamePage({ params }: GamePageProps) {
         )}
 
         {/* Buzzer Button */}
-        {gameState.current_question && buzzerEnabled && (
+        {gameState.currentQuestion && buzzerEnabled && (
           <div className="fixed bottom-8 left-1/2 transform -translate-x-1/2 z-50">
             <BuzzerButton
               enabled={buzzerEnabled}

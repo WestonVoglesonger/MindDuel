@@ -37,3 +37,46 @@ export function calculateNewRatings(
     newRatingB: Math.round(newRatingB),
   }
 }
+
+/**
+ * Calculates ELO changes for two players after a game.
+ * @param ratingA Player A's current ELO rating.
+ * @param ratingB Player B's current ELO rating.
+ * @param winnerId ID of the winning player, or null for a draw.
+ * @returns An object containing rating changes for both players.
+ */
+export function calculateEloChanges(
+  ratingA: number,
+  ratingB: number,
+  winnerId: string | null,
+  playerAId: string,
+  playerBId: string
+): { player1Change: number; player2Change: number } {
+  let scoreA: number
+  let scoreB: number
+
+  if (winnerId === null) {
+    // Draw
+    scoreA = 0.5
+    scoreB = 0.5
+  } else if (winnerId === playerAId) {
+    // Player A wins
+    scoreA = 1
+    scoreB = 0
+  } else {
+    // Player B wins
+    scoreA = 0
+    scoreB = 1
+  }
+
+  const expectedA = calculateExpectedScore(ratingA, ratingB)
+  const expectedB = calculateExpectedScore(ratingB, ratingA)
+
+  const changeA = Math.round(K_FACTOR * (scoreA - expectedA))
+  const changeB = Math.round(K_FACTOR * (scoreB - expectedB))
+
+  return {
+    player1Change: changeA,
+    player2Change: changeB,
+  }
+}

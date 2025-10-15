@@ -1,5 +1,11 @@
 import { MatchmakingServiceInterface } from '@/lib/interfaces/matchmaking.interface'
-import { MatchmakingStatus } from '@/types/game.types'
+
+interface MatchmakingStatus {
+  status: 'idle' | 'searching' | 'found' | 'matched' | 'error'
+  eloRange: number
+  timeElapsed: number
+  estimatedWaitTime: number
+}
 import * as matchmakingDb from '@/lib/db/matchmaking.db'
 import * as gameDb from '@/lib/db/game.db'
 import { GAME_CONFIG } from '@/constants/game-config'
@@ -37,9 +43,9 @@ export class MatchmakingService implements MatchmakingServiceInterface {
     try {
       // Try to find opponent with expanding ELO range
       const eloRanges = [
-        GAME_CONFIG.ELO_RANGE_INITIAL,
-        GAME_CONFIG.ELO_RANGE_EXPANDED,
-        GAME_CONFIG.ELO_RANGE_MAX
+        GAME_CONFIG.MATCHMAKING.ELO_RANGE_INITIAL,
+        GAME_CONFIG.MATCHMAKING.ELO_RANGE_INITIAL * 2, // Expanded range
+        GAME_CONFIG.MATCHMAKING.ELO_RANGE_INITIAL * 4  // Max range
       ]
 
       for (const eloRange of eloRanges) {
@@ -85,12 +91,12 @@ export class MatchmakingService implements MatchmakingServiceInterface {
         }
       }
 
-      const timeElapsed = Date.now() - new Date(queueEntry.joined_at).getTime()
-      const estimatedWaitTime = await this.getEstimatedWaitTime(queueEntry.elo_rating)
+      const timeElapsed = Date.now() - new Date(queueEntry.created_at).getTime()
+      const estimatedWaitTime = await this.getEstimatedWaitTime(1200) // Default ELO rating
 
       return {
         status: 'searching',
-        eloRange: GAME_CONFIG.ELO_RANGE_INITIAL,
+        eloRange: GAME_CONFIG.MATCHMAKING.ELO_RANGE_INITIAL,
         timeElapsed: Math.floor(timeElapsed / 1000), // Convert to seconds
         estimatedWaitTime
       }
@@ -182,7 +188,7 @@ export class MatchmakingService implements MatchmakingServiceInterface {
           MatchmakingService.matchmakingIntervals.delete(userId)
           await this.cancelMatchmaking(userId)
         }
-      }, GAME_CONFIG.MATCHMAKING_TIMEOUT)
+      }, GAME_CONFIG.MATCHMAKING.QUEUE_TIMEOUT_SECONDS * 1000) // Convert to milliseconds
 
       return true
     } catch (error) {

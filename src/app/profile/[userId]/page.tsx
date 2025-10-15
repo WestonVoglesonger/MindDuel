@@ -47,7 +47,7 @@ export default async function ProfilePage({ params }: ProfilePageProps) {
     return { tier: 'Master', color: 'bg-red-500' }
   }
 
-  const eloTier = getEloTier(user.elo_rating)
+  const eloTier = getEloTier(user.eloRating)
   const isOwnProfile = authUser?.id === user.id
 
   return (
@@ -67,15 +67,15 @@ export default async function ProfilePage({ params }: ProfilePageProps) {
           <CardContent className="p-8">
             <div className="flex items-center space-x-6">
               <Avatar className="h-24 w-24">
-                <AvatarImage src={user.avatar_url || ''} alt={user.display_name || user.username} />
+                <AvatarImage src={user.avatarUrl || ''} alt={user.displayName || user.username} />
                 <AvatarFallback className="text-2xl">
-                  {(user.display_name || user.username).charAt(0).toUpperCase()}
+                  {(user.displayName || user.username).charAt(0).toUpperCase()}
                 </AvatarFallback>
               </Avatar>
               
               <div className="flex-1">
                 <h1 className="text-3xl font-bold mb-2">
-                  {user.display_name || user.username}
+                  {user.displayName || user.username}
                 </h1>
                 <p className="text-gray-600 mb-4">@{user.username}</p>
                 
@@ -85,7 +85,7 @@ export default async function ProfilePage({ params }: ProfilePageProps) {
                     {eloTier.tier}
                   </Badge>
                   <Badge variant="outline" className="text-lg px-4 py-2">
-                    ELO: {user.elo_rating}
+                    ELO: {user.eloRating}
                   </Badge>
                 </div>
               </div>
@@ -98,7 +98,7 @@ export default async function ProfilePage({ params }: ProfilePageProps) {
           <Card>
             <CardContent className="p-6 text-center">
               <div className="text-3xl font-bold text-blue-600">
-                {user.games_played}
+                {user.gamesPlayed}
               </div>
               <div className="text-sm text-muted-foreground">Games Played</div>
             </CardContent>
@@ -107,7 +107,7 @@ export default async function ProfilePage({ params }: ProfilePageProps) {
           <Card>
             <CardContent className="p-6 text-center">
               <div className="text-3xl font-bold text-green-600">
-                {user.games_won}
+                {user.gamesWon}
               </div>
               <div className="text-sm text-muted-foreground">Games Won</div>
             </CardContent>
@@ -116,7 +116,7 @@ export default async function ProfilePage({ params }: ProfilePageProps) {
           <Card>
             <CardContent className="p-6 text-center">
               <div className="text-3xl font-bold text-purple-600">
-                {user.games_played > 0 ? Math.round((user.games_won / user.games_played) * 100) : 0}%
+                {user.gamesPlayed > 0 ? Math.round((user.gamesWon / user.gamesPlayed) * 100) : 0}%
               </div>
               <div className="text-sm text-muted-foreground">Win Rate</div>
             </CardContent>
@@ -125,7 +125,7 @@ export default async function ProfilePage({ params }: ProfilePageProps) {
           <Card>
             <CardContent className="p-6 text-center">
               <div className="text-3xl font-bold text-orange-600">
-                {user.elo_rating}
+                {user.eloRating}
               </div>
               <div className="text-sm text-muted-foreground">ELO Rating</div>
             </CardContent>

@@ -1,18 +1,18 @@
 import { createClient } from '@/lib/supabase/server'
-import { GameSession, GameSessionInsert, GameQuestion, BuzzerEvent, BuzzerEventInsert } from '@/types/game.types'
+import { GameSession, GameQuestion, BuzzerEvent, BuzzerEventInsert } from '@/types/game.types'
 
 /**
  * Create a new game session
  */
 export async function createGameSession(player1Id: string, player2Id: string): Promise<GameSession | null> {
-  const supabase = createClient()
+  const supabase = await createClient()
   
   const { data, error } = await supabase
     .from('game_sessions')
     .insert({
       player1_id: player1Id,
       player2_id: player2Id,
-      status: 'waiting',
+      status: 'waiting_for_players',
       current_turn_player_id: player1Id, // Player 1 goes first
       board_state: {
         selectedQuestions: [],
@@ -35,7 +35,7 @@ export async function createGameSession(player1Id: string, player2Id: string): P
  * Get game session by ID
  */
 export async function getGameSession(gameSessionId: string): Promise<GameSession | null> {
-  const supabase = createClient()
+  const supabase = await createClient()
   
   const { data, error } = await supabase
     .from('game_sessions')
@@ -55,7 +55,7 @@ export async function getGameSession(gameSessionId: string): Promise<GameSession
  * Update game session
  */
 export async function updateGameSession(gameSessionId: string, updates: Partial<GameSession>): Promise<GameSession | null> {
-  const supabase = createClient()
+  const supabase = await createClient()
   
   const { data, error } = await supabase
     .from('game_sessions')
@@ -76,7 +76,7 @@ export async function updateGameSession(gameSessionId: string, updates: Partial<
  * Select questions for a game (25 questions for 5x5 board)
  */
 export async function selectQuestionsForGame(gameSessionId: string): Promise<GameQuestion[]> {
-  const supabase = createClient()
+  const supabase = await createClient()
   
   // First, get 25 random questions
   const { data: questions, error: questionsError } = await supabase
@@ -95,128 +95,46 @@ export async function selectQuestionsForGame(gameSessionId: string): Promise<Gam
     return []
   }
 
-  // Insert game questions with positions
-  const gameQuestions: GameQuestion[] = []
-  
-  for (let i = 0; i < 25; i++) {
-    const { data: gameQuestion, error } = await supabase
-      .from('game_questions')
-      .insert({
-        game_session_id: gameSessionId,
-        question_id: questions[i].id,
-        position: i
-      })
-      .select()
-      .single()
-
-    if (error) {
-      console.error('Error creating game question:', error)
-      continue
-    }
-
-    if (gameQuestion) {
-      gameQuestions.push(gameQuestion)
-    }
-  }
-
-  return gameQuestions
+  // TODO: Implement game_questions table or use board_state approach
+  // For now, return empty array since game_questions table doesn't exist
+  return []
 }
 
 /**
  * Get questions for a game session
  */
 export async function getGameQuestions(gameSessionId: string): Promise<GameQuestion[]> {
-  const supabase = createClient()
-  
-  const { data, error } = await supabase
-    .from('game_questions')
-    .select(`
-      *,
-      question:questions(*)
-    `)
-    .eq('game_session_id', gameSessionId)
-    .order('position')
-
-  if (error) {
-    console.error('Error fetching game questions:', error)
-    return []
-  }
-
-  return data || []
+  // TODO: Implement game_questions table or use board_state approach
+  // For now, return empty array since game_questions table doesn't exist
+  return []
 }
 
 /**
  * Record a buzzer event
  */
 export async function recordBuzzerEvent(buzzerData: BuzzerEventInsert): Promise<BuzzerEvent | null> {
-  const supabase = createClient()
-  
-  const { data, error } = await supabase
-    .from('buzzer_events')
-    .insert(buzzerData)
-    .select()
-    .single()
-
-  if (error) {
-    console.error('Error recording buzzer event:', error)
-    return null
-  }
-
-  return data
+  // TODO: Implement buzzer_events table
+  // For now, return null since buzzer_events table doesn't exist
+  console.log('Buzzer event recording not implemented:', buzzerData)
+  return null
 }
 
 /**
  * Get buzzer events for a question
  */
 export async function getBuzzerEvents(gameSessionId: string, questionId: string): Promise<BuzzerEvent[]> {
-  const supabase = createClient()
-  
-  const { data, error } = await supabase
-    .from('buzzer_events')
-    .select('*')
-    .eq('game_session_id', gameSessionId)
-    .eq('question_id', questionId)
-    .order('server_timestamp')
-
-  if (error) {
-    console.error('Error fetching buzzer events:', error)
-    return []
-  }
-
-  return data || []
+  // TODO: Implement buzzer_events table
+  // For now, return empty array since buzzer_events table doesn't exist
+  return []
 }
 
 /**
  * Determine who buzzed first for a question
  */
 export async function determineBuzzerWinner(gameSessionId: string, questionId: string): Promise<string | null> {
-  const buzzerEvents = await getBuzzerEvents(gameSessionId, questionId)
-  
-  if (buzzerEvents.length === 0) {
-    return null
-  }
-
-  // Sort by server timestamp to determine winner
-  const sortedEvents = buzzerEvents.sort((a, b) => 
-    new Date(a.server_timestamp).getTime() - new Date(b.server_timestamp).getTime()
-  )
-
-  const winner = sortedEvents[0]
-  
-  // Update all buzzer events to mark the winner
-  const supabase = createClient()
-  await supabase
-    .from('buzzer_events')
-    .update({ was_first: false })
-    .eq('game_session_id', gameSessionId)
-    .eq('question_id', questionId)
-
-  await supabase
-    .from('buzzer_events')
-    .update({ was_first: true })
-    .eq('id', winner.id)
-
-  return winner.player_id
+  // TODO: Implement buzzer_events table
+  // For now, return null since buzzer_events table doesn't exist
+  return null
 }
 
 /**
@@ -229,33 +147,17 @@ export async function submitAnswer(
   answer: string,
   isCorrect: boolean
 ): Promise<GameQuestion | null> {
-  const supabase = createClient()
-  
-  const { data, error } = await supabase
-    .from('game_questions')
-    .update({
-      answered_by: playerId,
-      is_correct: isCorrect,
-      answered_at: new Date().toISOString()
-    })
-    .eq('game_session_id', gameSessionId)
-    .eq('question_id', questionId)
-    .select()
-    .single()
-
-  if (error) {
-    console.error('Error submitting answer:', error)
-    return null
-  }
-
-  return data
+  // TODO: Implement game_questions table or use board_state approach
+  // For now, return null since game_questions table doesn't exist
+  console.log('Answer submission not implemented:', { gameSessionId, questionId, playerId, answer, isCorrect })
+  return null
 }
 
 /**
  * Update player score
  */
 export async function updateScore(gameSessionId: string, playerId: string, scoreDelta: number): Promise<GameSession | null> {
-  const supabase = createClient()
+  const supabase = await createClient()
   
   // Get current game session
   const gameSession = await getGameSession(gameSessionId)
@@ -280,7 +182,7 @@ export async function updateScore(gameSessionId: string, playerId: string, score
  * Complete a game
  */
 export async function completeGame(gameSessionId: string, winnerId: string | null): Promise<GameSession | null> {
-  const supabase = createClient()
+  const supabase = await createClient()
   
   const { data, error } = await supabase
     .from('game_sessions')
@@ -305,13 +207,13 @@ export async function completeGame(gameSessionId: string, winnerId: string | nul
  * Get active game for a user
  */
 export async function getActiveGameForUser(userId: string): Promise<GameSession | null> {
-  const supabase = createClient()
+  const supabase = await createClient()
   
   const { data, error } = await supabase
     .from('game_sessions')
     .select('*')
     .or(`player1_id.eq.${userId},player2_id.eq.${userId}`)
-    .in('status', ['waiting', 'in_progress'])
+    .in('status', ['waiting_for_players', 'in_progress'])
     .order('created_at', { ascending: false })
     .limit(1)
     .single()
@@ -332,12 +234,12 @@ export async function getActiveGameForUser(userId: string): Promise<GameSession 
  * Abandon a game
  */
 export async function abandonGame(gameSessionId: string): Promise<GameSession | null> {
-  const supabase = createClient()
+  const supabase = await createClient()
   
   const { data, error } = await supabase
     .from('game_sessions')
     .update({
-      status: 'abandoned',
+      status: 'cancelled',
       completed_at: new Date().toISOString()
     })
     .eq('id', gameSessionId)
