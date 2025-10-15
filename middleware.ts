@@ -1,5 +1,4 @@
 import { updateSession } from '@/lib/supabase/middleware'
-import { createServerClient } from '@supabase/ssr'
 import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
 
@@ -14,42 +13,18 @@ export async function middleware(request: NextRequest) {
   // Update the Supabase session
   const response = await updateSession(request)
 
-  // Check if user is authenticated
-  const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    {
-      cookies: {
-        get(name: string) {
-          return request.cookies.get(name)?.value
-        },
-        set(name: string, value: string, options: any) {
-          request.cookies.set({
-            name,
-            value,
-            ...options,
-          })
-        },
-        remove(name: string, options: any) {
-          request.cookies.set({
-            name,
-            value: '',
-            ...options,
-          })
-        },
-      },
-    }
-  )
-
-  const { data: { user } } = await supabase.auth.getUser()
-
   // Redirect unauthenticated users from protected routes
   const protectedRoutes = ['/lobby', '/game', '/profile', '/leaderboard']
   
-  if (protectedRoutes.some(route => pathname.startsWith(route)) && !user) {
-    const url = request.nextUrl.clone()
-    url.pathname = '/login'
-    return NextResponse.redirect(url)
+  if (protectedRoutes.some(route => pathname.startsWith(route))) {
+    // Check if user is authenticated by looking at the session cookie
+    const sessionCookie = request.cookies.get('sb-access-token')
+    
+    if (!sessionCookie) {
+      const url = request.nextUrl.clone()
+      url.pathname = '/login'
+      return NextResponse.redirect(url)
+    }
   }
 
   return response
