@@ -3,6 +3,17 @@
 import { useState, useCallback, useRef } from 'react'
 import { createBuzzerDelayTimer, createAnswerTimer } from '@/lib/utils/game-timer'
 
+interface BuzzerDelayTimer {
+  start: () => void
+  stop: () => void
+}
+
+interface AnswerTimer {
+  start: () => void
+  stop: () => void
+  getRemaining(): number
+}
+
 interface UseBuzzerOptions {
   onBuzzerActivate?: () => void
   onBuzzerPress?: () => void
@@ -21,8 +32,8 @@ export function useBuzzer({
   const [answerTimeRemaining, setAnswerTimeRemaining] = useState(0)
   const [isAnswering, setIsAnswering] = useState(false)
   
-  const buzzerTimerRef = useRef<any>(null)
-  const answerTimerRef = useRef<any>(null)
+  const buzzerTimerRef = useRef<BuzzerDelayTimer | null>(null)
+  const answerTimerRef = useRef<AnswerTimer | null>(null)
 
   // Enable buzzer with random delay
   const enableBuzzer = useCallback(() => {

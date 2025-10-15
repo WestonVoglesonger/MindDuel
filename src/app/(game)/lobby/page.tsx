@@ -10,7 +10,7 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { UserService } from '@/lib/services/user.service'
-import { User } from '@/types/game.types'
+import { Player as User } from '@/types/game.types'
 import { Search, Users, Trophy, Settings, LogOut } from 'lucide-react'
 
 export default function LobbyPage() {
@@ -35,7 +35,18 @@ export default function LobbyPage() {
 
         const userData = await userService.getUserById(authUser.id)
         if (userData) {
-          setUser(userData)
+          // Transform database user to Player interface
+          const transformedUser = {
+            id: userData.id,
+            username: userData.username,
+            displayName: userData.display_name || userData.username,
+            avatarUrl: userData.avatar_url,
+            eloRating: userData.elo_rating,
+            gamesPlayed: 0, // TODO: Add games played/won to database
+            gamesWon: 0,
+            isOnline: true
+          }
+          setUser(transformedUser)
         } else {
           setError('User profile not found')
         }
@@ -54,7 +65,18 @@ export default function LobbyPage() {
     async function loadOnlinePlayers() {
       try {
         const players = await userService.getLeaderboard(10)
-        setOnlinePlayers(players)
+        // Transform database users to Player interface
+        const transformedPlayers = players.map(player => ({
+          id: player.id,
+          username: player.username,
+          displayName: player.display_name || player.username,
+          avatarUrl: player.avatar_url,
+          eloRating: player.elo_rating,
+          gamesPlayed: 0, // TODO: Add games played/won to database
+          gamesWon: 0,
+          isOnline: true
+        }))
+        setOnlinePlayers(transformedPlayers)
       } catch (err) {
         console.error('Error loading online players:', err)
       }
@@ -111,7 +133,7 @@ export default function LobbyPage() {
           <div className="flex items-center justify-between">
             <div>
               <h1 className="text-3xl font-bold text-gray-900">
-                Welcome back, {user.display_name || user.username}!
+                Welcome back, {user.displayName || user.username}!
               </h1>
               <p className="text-gray-600 mt-2">
                 Ready for your next trivia challenge?
@@ -121,7 +143,7 @@ export default function LobbyPage() {
             <div className="flex items-center space-x-4">
               <Badge variant="secondary" className="text-lg px-4 py-2">
                 <Trophy className="h-4 w-4 mr-2" />
-                ELO: {user.elo_rating}
+                ELO: {user.eloRating}
               </Badge>
               
               <Button variant="outline" onClick={handleLogout}>
@@ -153,7 +175,7 @@ export default function LobbyPage() {
           <TabsContent value="matchmaking" className="space-y-6">
             <MatchmakingQueue
               userId={user.id}
-              eloRating={user.elo_rating}
+              eloRating={user.eloRating}
               onMatchFound={handleMatchFound}
               onError={handleError}
             />
@@ -196,7 +218,7 @@ export default function LobbyPage() {
               <Card>
                 <CardContent className="p-6 text-center">
                   <div className="text-3xl font-bold text-blue-600">
-                    {user.elo_rating}
+                    {user.eloRating}
                   </div>
                   <div className="text-sm text-muted-foreground">ELO Rating</div>
                 </CardContent>
@@ -205,7 +227,7 @@ export default function LobbyPage() {
               <Card>
                 <CardContent className="p-6 text-center">
                   <div className="text-3xl font-bold text-green-600">
-                    {user.games_played}
+                    {user.gamesPlayed}
                   </div>
                   <div className="text-sm text-muted-foreground">Games Played</div>
                 </CardContent>
@@ -214,7 +236,7 @@ export default function LobbyPage() {
               <Card>
                 <CardContent className="p-6 text-center">
                   <div className="text-3xl font-bold text-purple-600">
-                    {user.games_won}
+                    {user.gamesWon}
                   </div>
                   <div className="text-sm text-muted-foreground">Games Won</div>
                 </CardContent>
@@ -223,7 +245,7 @@ export default function LobbyPage() {
               <Card>
                 <CardContent className="p-6 text-center">
                   <div className="text-3xl font-bold text-orange-600">
-                    {user.games_played > 0 ? Math.round((user.games_won / user.games_played) * 100) : 0}%
+                    {user.gamesPlayed > 0 ? Math.round((user.gamesWon / user.gamesPlayed) * 100) : 0}%
                   </div>
                   <div className="text-sm text-muted-foreground">Win Rate</div>
                 </CardContent>

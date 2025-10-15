@@ -14,7 +14,7 @@ interface ProfilePageProps {
 }
 
 export default async function ProfilePage({ params }: ProfilePageProps) {
-  const supabase = createClient()
+  const supabase = await createClient()
   const { data: { user: authUser } } = await supabase.auth.getUser()
   const userService = new UserService()
 
@@ -150,25 +150,26 @@ export default async function ProfilePage({ params }: ProfilePageProps) {
                   <div key={index} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
                     <div className="flex items-center space-x-4">
                       <div className={`w-3 h-3 rounded-full ${
-                        match.winner_id === user.id ? 'bg-green-500' : 'bg-red-500'
+                        match.winner?.id === user.id ? 'bg-green-500' : 'bg-red-500'
                       }`} />
                       <div>
                         <p className="font-medium">
-                          vs {match.player1_id === user.id ? match.player2?.display_name : match.player1?.display_name}
+                          vs {match.player1.id === user.id ? match.player2?.displayName : match.player1?.displayName}
                         </p>
                         <p className="text-sm text-muted-foreground">
-                          {new Date(match.completed_at).toLocaleDateString()}
+                          {match.completed_at ? new Date(match.completed_at).toLocaleDateString() : 'In Progress'}
                         </p>
                       </div>
                     </div>
                     <div className="text-right">
                       <p className="font-bold">
-                        {match.player1_id === user.id ? match.player1_score : match.player2_score} - {match.player1_id === user.id ? match.player2_score : match.player1_score}
+                        {/* Scores not implemented yet */}
+                        0 - 0
                       </p>
                       <p className={`text-sm ${
-                        match.winner_id === user.id ? 'text-green-600' : 'text-red-600'
+                        match.winner?.id === user.id ? 'text-green-600' : 'text-red-600'
                       }`}>
-                        {match.winner_id === user.id ? 'Won' : 'Lost'}
+                        {match.winner?.id === user.id ? 'Won' : 'Lost'}
                       </p>
                     </div>
                   </div>

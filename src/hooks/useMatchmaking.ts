@@ -3,7 +3,13 @@
 import { useState, useEffect, useCallback } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { MatchmakingService } from '@/lib/services/matchmaking.service'
-import { MatchmakingStatus } from '@/types/game.types'
+
+interface MatchmakingStatus {
+  status: 'idle' | 'searching' | 'found' | 'matched' | 'error'
+  eloRange: number
+  timeElapsed: number
+  estimatedWaitTime: number
+}
 
 interface UseMatchmakingOptions {
   userId: string
@@ -67,7 +73,7 @@ export function useMatchmaking({
                   .from('game_sessions')
                   .select('*')
                   .or(`player1_id.eq.${userId},player2_id.eq.${userId}`)
-                  .eq('status', 'waiting')
+                  .eq('status', 'waiting_for_players')
                   .single()
                 
                 if (activeGame.data) {
@@ -76,7 +82,9 @@ export function useMatchmaking({
                     : activeGame.data.player1_id
                   
                   setStatus(prev => ({ ...prev, status: 'found' }))
-                  onMatchFound?.(opponentId)
+                  if (opponentId) {
+                    onMatchFound?.(opponentId)
+                  }
                 } else {
                   setStatus(prev => ({ ...prev, status: 'idle' }))
                 }

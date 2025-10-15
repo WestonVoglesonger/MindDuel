@@ -38,7 +38,8 @@ export type Database = {
           player2_score: number
           state: Json
           status: Database['public']['Enums']['game_status']
-          turn_player_id: string | null
+          current_turn_player_id: string | null
+          winner_id: string | null
           updated_at: string
         }
         Insert: {
@@ -51,7 +52,8 @@ export type Database = {
           player2_score?: number
           state?: Json
           status?: Database['public']['Enums']['game_status']
-          turn_player_id?: string | null
+          current_turn_player_id?: string | null
+          winner_id?: string | null
           updated_at?: string
         }
         Update: {
@@ -64,7 +66,8 @@ export type Database = {
           player2_score?: number
           state?: Json
           status?: Database['public']['Enums']['game_status']
-          turn_player_id?: string | null
+          current_turn_player_id?: string | null
+          winner_id?: string | null
           updated_at?: string
         }
         Relationships: [
@@ -90,8 +93,15 @@ export type Database = {
             referencedColumns: ['id']
           },
           {
-            foreignKeyName: 'game_sessions_turn_player_id_fkey'
-            columns: ['turn_player_id']
+            foreignKeyName: 'game_sessions_current_turn_player_id_fkey'
+            columns: ['current_turn_player_id']
+            isOneToOne: false
+            referencedRelation: 'users'
+            referencedColumns: ['id']
+          },
+          {
+            foreignKeyName: 'game_sessions_winner_id_fkey'
+            columns: ['winner_id']
             isOneToOne: false
             referencedRelation: 'users'
             referencedColumns: ['id']
@@ -129,34 +139,40 @@ export type Database = {
       }
       questions: {
         Row: {
-          answer: string
           category_id: string
-          clue: string
+          question_text: string
+          correct_answer: string
+          answer_variants: string[]
+          point_value: number
+          difficulty: 'easy' | 'medium' | 'hard'
+          air_date: string | null
+          source: string
           created_at: string
-          difficulty: number
           id: string
-          round: string
-          value: number
         }
         Insert: {
-          answer: string
           category_id: string
-          clue: string
+          question_text: string
+          correct_answer: string
+          answer_variants?: string[]
+          point_value: number
+          difficulty?: 'easy' | 'medium' | 'hard'
+          air_date?: string | null
+          source?: string
           created_at?: string
-          difficulty?: number
           id?: string
-          round: string
-          value: number
         }
         Update: {
-          answer?: string
           category_id?: string
-          clue?: string
+          question_text?: string
+          correct_answer?: string
+          answer_variants?: string[]
+          point_value?: number
+          difficulty?: 'easy' | 'medium' | 'hard'
+          air_date?: string | null
+          source?: string
           created_at?: string
-          difficulty?: number
           id?: string
-          round?: string
-          value?: number
         }
         Relationships: [
           {
@@ -172,6 +188,7 @@ export type Database = {
         Row: {
           avatar_url: string | null
           created_at: string
+          display_name: string | null
           elo_rating: number
           id: string
           username: string
@@ -179,6 +196,7 @@ export type Database = {
         Insert: {
           avatar_url?: string | null
           created_at?: string
+          display_name?: string | null
           elo_rating?: number
           id: string
           username: string
@@ -186,6 +204,7 @@ export type Database = {
         Update: {
           avatar_url?: string | null
           created_at?: string
+          display_name?: string | null
           elo_rating?: number
           id?: string
           username?: string

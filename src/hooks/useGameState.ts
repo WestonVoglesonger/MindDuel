@@ -1,10 +1,20 @@
 'use client'
 
 import { useState, useCallback, useEffect } from 'react'
-import { GameState, Question } from '@/types/game.types'
+import { Question } from '@/types/game.types'
+
+interface LocalGameState {
+  currentQuestion: Question | null
+  selectedPosition: number | null
+  buzzerEnabled: boolean
+  buzzerWinner: string | null
+  answerSubmitted: boolean
+  timeRemaining: number
+  gamePhase: 'waiting' | 'question' | 'question_reveal' | 'answering' | 'buzzer' | 'buzzer_active' | 'scoring' | 'completed'
+}
 
 interface UseGameStateOptions {
-  onStateChange?: (newState: GameState) => void
+  onStateChange?: (newState: LocalGameState) => void
   onQuestionSelect?: (question: Question, position: number) => void
   onAnswerSubmit?: (questionId: string, answer: string) => void
 }
@@ -14,7 +24,7 @@ export function useGameState({
   onQuestionSelect,
   onAnswerSubmit
 }: UseGameStateOptions = {}) {
-  const [gameState, setGameState] = useState<GameState>({
+  const [gameState, setGameState] = useState<LocalGameState>({
     currentQuestion: null,
     selectedPosition: null,
     buzzerEnabled: false,
@@ -25,7 +35,7 @@ export function useGameState({
   })
 
   // Update game state
-  const updateGameState = useCallback((updates: Partial<GameState>) => {
+  const updateGameState = useCallback((updates: Partial<LocalGameState>) => {
     setGameState(prev => {
       const newState = { ...prev, ...updates }
       onStateChange?.(newState)
@@ -89,7 +99,7 @@ export function useGameState({
   }, [updateGameState])
 
   // Set game phase
-  const setGamePhase = useCallback((phase: GameState['gamePhase']) => {
+  const setGamePhase = useCallback((phase: LocalGameState['gamePhase']) => {
     updateGameState({ gamePhase: phase })
   }, [updateGameState])
 
@@ -99,7 +109,7 @@ export function useGameState({
   }, [updateGameState])
 
   // Check if it's a specific game phase
-  const isGamePhase = useCallback((phase: GameState['gamePhase']) => {
+  const isGamePhase = useCallback((phase: LocalGameState['gamePhase']) => {
     return gameState.gamePhase === phase
   }, [gameState.gamePhase])
 

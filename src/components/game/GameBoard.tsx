@@ -47,7 +47,7 @@ export function GameBoard({
   }
 
   const getPosition = (row: number, col: number): number => {
-    return row * GAME_CONFIG.BOARD_COLS + col
+    return row * GAME_CONFIG.BOARD_SIZE.COLS + col
   }
 
   const isQuestionSelectable = (row: number, col: number): boolean => {
@@ -99,8 +99,8 @@ export function GameBoard({
 
       {/* Question Grid */}
       <div className="grid grid-cols-5 gap-2">
-        {Array.from({ length: GAME_CONFIG.BOARD_ROWS }, (_, row) =>
-          Array.from({ length: GAME_CONFIG.BOARD_COLS }, (_, col) => {
+        {Array.from({ length: GAME_CONFIG.BOARD_SIZE.ROWS }, (_, row) =>
+          Array.from({ length: GAME_CONFIG.BOARD_SIZE.COLS }, (_, col) => {
             const question = getQuestionAtPosition(row, col)
             const position = getPosition(row, col)
             const pointValue = GAME_CONFIG.POINT_VALUES[row]

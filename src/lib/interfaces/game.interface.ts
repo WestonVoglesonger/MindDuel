@@ -53,7 +53,7 @@ export interface GameServiceInterface {
   /**
    * Get game questions with full question data
    */
-  getGameQuestions(gameSessionId: string): Promise<any[]>
+  getGameQuestions(gameSessionId: string): Promise<GameQuestion[]>
 
   /**
    * Select a question for the current turn

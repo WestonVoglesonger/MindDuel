@@ -53,6 +53,15 @@ function normalizeString(str: string): string {
 }
 
 /**
+ * Result of answer validation
+ */
+export interface AnswerValidationResult {
+  isCorrect: boolean
+  confidence: number
+  distance: number
+}
+
+/**
  * Performs fuzzy matching between a user's answer and the correct answer.
  * @param userAnswer The answer provided by the user.
  * @param correctAnswer The correct answer from the database.
@@ -73,4 +82,109 @@ export function fuzzyMatchAnswer(
 
   const distance = levenshteinDistance(normalizedUser, normalizedCorrect)
   return distance <= tolerance
+}
+
+/**
+ * Validates an answer and returns detailed result
+ */
+export function validateAnswer(
+  userAnswer: string,
+  correctAnswer: string,
+  tolerance: number = 1
+): AnswerValidationResult {
+  const normalizedUser = normalizeString(userAnswer)
+  const normalizedCorrect = normalizeString(correctAnswer)
+
+  if (normalizedUser === normalizedCorrect) {
+    return {
+      isCorrect: true,
+      confidence: 1.0,
+      distance: 0
+    }
+  }
+
+  const distance = levenshteinDistance(normalizedUser, normalizedCorrect)
+  const isCorrect = distance <= tolerance
+  const confidence = Math.max(0, 1 - (distance / Math.max(normalizedUser.length, normalizedCorrect.length)))
+
+  return {
+    isCorrect,
+    confidence,
+    distance
+  }
+}
+
+/**
+ * Generates common answer variants for a given answer.
+ * This includes common alternate phrasings, abbreviations, etc.
+ * @param answer The original answer
+ * @returns Array of answer variants
+ */
+export function generateAnswerVariants(answer: string): string[] {
+  const variants: string[] = []
+  const normalized = normalizeString(answer)
+
+  // Add the normalized version
+  variants.push(normalized)
+
+  // Common patterns for Jeopardy-style answers
+  // Remove "the" from beginning if present
+  if (normalized.startsWith('the ')) {
+    variants.push(normalized.substring(4))
+  }
+
+  // Remove "a " from beginning if present
+  if (normalized.startsWith('a ')) {
+    variants.push(normalized.substring(2))
+  }
+
+  // Remove "an " from beginning if present
+  if (normalized.startsWith('an ')) {
+    variants.push(normalized.substring(3))
+  }
+
+  // Handle "what is/are" prefixes (common in Jeopardy)
+  if (normalized.startsWith('what is ')) {
+    variants.push(normalized.substring(8))
+  }
+  if (normalized.startsWith('what are ')) {
+    variants.push(normalized.substring(9))
+  }
+  if (normalized.startsWith('who is ')) {
+    variants.push(normalized.substring(7))
+  }
+  if (normalized.startsWith('who are ')) {
+    variants.push(normalized.substring(8))
+  }
+
+  // Add original answer as well (in case it's already normalized)
+  if (!variants.includes(answer.toLowerCase())) {
+    variants.push(answer.toLowerCase())
+  }
+
+  return [...new Set(variants)] // Remove duplicates
+}
+
+/**
+ * Check if an answer is acceptable (correct or close enough)
+ */
+export function isAnswerAcceptable(
+  userAnswer: string,
+  correctAnswer: string,
+  answerVariants: string[] = [],
+  tolerance: number = 1
+): boolean {
+  // Check main answer
+  if (fuzzyMatchAnswer(userAnswer, correctAnswer, tolerance)) {
+    return true
+  }
+
+  // Check variants
+  for (const variant of answerVariants) {
+    if (fuzzyMatchAnswer(userAnswer, variant, tolerance)) {
+      return true
+    }
+  }
+
+  return false
 }

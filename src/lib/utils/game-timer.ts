@@ -1,26 +1,78 @@
 /**
- * Calculates the remaining time in seconds for a given timer.
- * @param startTime The ISO string of when the timer started.
- * @param durationSeconds The total duration of the timer in seconds.
- * @returns The remaining time in seconds, or 0 if time has run out.
+ * Timer class for managing game timers
  */
-export function getRemainingTime(startTime: string | null, durationSeconds: number): number {
-  if (!startTime) {
-    return durationSeconds
+class GameTimer {
+  private intervalId: NodeJS.Timeout | null = null
+  private timeoutId: NodeJS.Timeout | null = null
+  private onTick: (timeRemaining: number) => void
+  private onComplete: () => void
+  private duration: number
+  private remaining: number
+
+  constructor(
+    duration: number,
+    onTick: (timeRemaining: number) => void,
+    onComplete: () => void
+  ) {
+    this.duration = duration
+    this.remaining = duration
+    this.onTick = onTick
+    this.onComplete = onComplete
   }
-  const start = new Date(startTime).getTime()
-  const now = Date.now()
-  const elapsed = (now - start) / 1000 // elapsed in seconds
-  return Math.max(0, durationSeconds - elapsed)
+
+  start() {
+    this.stop()
+    this.remaining = this.duration
+    
+    this.intervalId = setInterval(() => {
+      this.remaining -= 100
+      this.onTick(this.remaining)
+      
+      if (this.remaining <= 0) {
+        this.stop()
+        this.onComplete()
+      }
+    }, 100)
+  }
+
+  stop() {
+    if (this.intervalId) {
+      clearInterval(this.intervalId)
+      this.intervalId = null
+    }
+    if (this.timeoutId) {
+      clearTimeout(this.timeoutId)
+      this.timeoutId = null
+    }
+  }
+
+  getRemaining(): number {
+    return this.remaining
+  }
 }
 
 /**
- * Formats seconds into a MM:SS string.
- * @param totalSeconds The total number of seconds.
- * @returns A formatted string like "00:05".
+ * Creates a buzzer delay timer
  */
-export function formatTime(totalSeconds: number): string {
-  const minutes = Math.floor(totalSeconds / 60)
-  const seconds = Math.floor(totalSeconds % 60)
-  return `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`
+export function createBuzzerDelayTimer(onActivate: () => void) {
+  const delay = Math.random() * 2000 + 1000 // 1-3 seconds
+  
+  return {
+    start: () => {
+      setTimeout(onActivate, delay)
+    },
+    stop: () => {
+      // Timer will complete naturally
+    }
+  }
+}
+
+/**
+ * Creates an answer timer
+ */
+export function createAnswerTimer(
+  onTick: (timeRemaining: number) => void,
+  onComplete: () => void
+) {
+  return new GameTimer(5000, onTick, onComplete)
 }

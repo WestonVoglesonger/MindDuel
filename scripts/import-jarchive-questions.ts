@@ -118,7 +118,7 @@ const sampleQuestions: JArchiveQuestion[] = [
 ]
 
 export async function importJArchiveQuestions() {
-  const supabase = createClient()
+  const supabase = await createClient()
   
   console.log('Starting J-Archive question import...')
   

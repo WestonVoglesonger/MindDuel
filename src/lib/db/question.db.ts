@@ -7,7 +7,7 @@ type QuestionInsert = {
   correct_answer: string
   answer_variants?: string[]
   point_value: number
-  difficulty?: string
+  difficulty?: 'easy' | 'medium' | 'hard'
   air_date?: string
   source?: string
 }
@@ -74,7 +74,7 @@ export async function getQuestionsByCategory(categoryId: string): Promise<Questi
 /**
  * Get random questions for a game
  */
-export async function getRandomQuestions(count: number, difficulty?: string): Promise<Question[]> {
+export async function getRandomQuestions(count: number, difficulty?: 'easy' | 'medium' | 'hard'): Promise<Question[]> {
   const supabase = await createClient()
   
   let query = supabase
@@ -252,7 +252,7 @@ export async function getQuestionCount(): Promise<number> {
 /**
  * Get questions by difficulty
  */
-export async function getQuestionsByDifficulty(difficulty: string, limit: number = 50): Promise<Question[]> {
+export async function getQuestionsByDifficulty(difficulty: 'easy' | 'medium' | 'hard', limit: number = 50): Promise<Question[]> {
   const supabase = await createClient()
   
   const { data, error } = await supabase

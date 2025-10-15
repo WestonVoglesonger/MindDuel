@@ -12,7 +12,7 @@ import { useRealtimeGame } from '@/hooks/useRealtimeGame'
 import { useBuzzer } from '@/hooks/useBuzzer'
 import { GameService } from '@/lib/services/game.service'
 import { UserService } from '@/lib/services/user.service'
-import { Question, User } from '@/types/game.types'
+import { Question, Player as User } from '@/types/game.types'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -108,7 +108,18 @@ export default function GamePage({ params }: GamePageProps) {
           setError('User not found')
           return
         }
-        setUser(userData)
+        // Transform database user to Player interface
+        const transformedUser = {
+          id: userData.id,
+          username: userData.username,
+          displayName: userData.display_name || userData.username,
+          avatarUrl: userData.avatar_url || null,
+          eloRating: userData.elo_rating,
+          gamesPlayed: 0, // TODO: Add games played/won to database
+          gamesWon: 0,
+          isOnline: true
+        }
+        setUser(transformedUser)
 
         // Load game session
         const session = await gameService.getGameSession(params.gameId)
@@ -119,9 +130,22 @@ export default function GamePage({ params }: GamePageProps) {
 
         // Load opponent
         const opponentId = session.player1_id === userData.id ? session.player2_id : session.player1_id
-        const opponentData = await userService.getUserById(opponentId)
-        if (opponentData) {
-          setOpponent(opponentData)
+        if (opponentId) {
+          const opponentData = await userService.getUserById(opponentId)
+          if (opponentData) {
+            // Transform database user to Player interface
+            const transformedOpponent = {
+              id: opponentData.id,
+              username: opponentData.username,
+              displayName: opponentData.display_name || opponentData.username,
+              avatarUrl: opponentData.avatar_url || null,
+              eloRating: opponentData.elo_rating,
+              gamesPlayed: 0, // TODO: Add games played/won to database
+              gamesWon: 0,
+              isOnline: true
+            }
+            setOpponent(transformedOpponent)
+          }
         }
 
         // Load game questions
@@ -166,9 +190,9 @@ export default function GamePage({ params }: GamePageProps) {
   }
 
   const handleBuzzerClick = async () => {
-    if (!gameState.currentQuestion) return
+    if (!gameState.current_question) return
 
-    const success = await handleBuzzerPress(gameState.currentQuestion.id)
+    const success = await handleBuzzerPress(gameState.current_question.id)
     if (success) {
       pressBuzzer()
       startAnswerTimer()
@@ -176,10 +200,10 @@ export default function GamePage({ params }: GamePageProps) {
   }
 
   const handleAnswerSubmit = async (answer: string) => {
-    if (!gameState.currentQuestion) return
+    if (!gameState.current_question) return
 
     try {
-      const result = await handleAnswerSubmission(gameState.currentQuestion.id, answer)
+      const result = await handleAnswerSubmission(gameState.current_question.id, answer)
       
       if (result.isCorrect) {
         // Correct answer - continue to next question
@@ -257,10 +281,10 @@ export default function GamePage({ params }: GamePageProps) {
             <div className="space-y-2 mb-6">
               <p>Final Score:</p>
               <p className="font-bold">
-                {user.display_name || user.username}: ${gameSession.player1_id === user.id ? gameSession.player1_score : gameSession.player2_score}
+                {user.displayName || user.username}: ${gameSession.player1_id === user.id ? gameSession.player1_score : gameSession.player2_score}
               </p>
               <p className="font-bold">
-                {opponent.display_name || opponent.username}: ${gameSession.player1_id === opponent.id ? gameSession.player1_score : gameSession.player2_score}
+                {opponent.displayName || opponent.username}: ${gameSession.player1_id === opponent.id ? gameSession.player1_score : gameSession.player2_score}
               </p>
             </div>
             <Button onClick={handleBackToLobby} className="w-full">
@@ -281,23 +305,23 @@ export default function GamePage({ params }: GamePageProps) {
           player1={{
             id: gameSession.player1_id,
             username: gameSession.player1_id === user.id ? user.username : opponent.username,
-            displayName: gameSession.player1_id === user.id ? user.display_name || user.username : opponent.display_name || opponent.username,
-            avatarUrl: gameSession.player1_id === user.id ? user.avatar_url : opponent.avatar_url,
+            displayName: gameSession.player1_id === user.id ? user.displayName || user.username : opponent.displayName || opponent.username,
+            avatarUrl: gameSession.player1_id === user.id ? user.avatarUrl : opponent.avatarUrl,
             score: gameSession.player1_score,
-            eloRating: gameSession.player1_id === user.id ? user.elo_rating : opponent.elo_rating,
+            eloRating: gameSession.player1_id === user.id ? user.eloRating : opponent.eloRating,
             isCurrentPlayer: gameSession.current_turn_player_id === gameSession.player1_id
           }}
           player2={{
-            id: gameSession.player2_id,
+            id: gameSession.player2_id!,
             username: gameSession.player2_id === user.id ? user.username : opponent.username,
-            displayName: gameSession.player2_id === user.id ? user.display_name || user.username : opponent.display_name || opponent.username,
-            avatarUrl: gameSession.player2_id === user.id ? user.avatar_url : opponent.avatar_url,
+            displayName: gameSession.player2_id === user.id ? user.displayName || user.username : opponent.displayName || opponent.username,
+            avatarUrl: gameSession.player2_id === user.id ? user.avatarUrl : opponent.avatarUrl,
             score: gameSession.player2_score,
-            eloRating: gameSession.player2_id === user.id ? user.elo_rating : opponent.elo_rating,
+            eloRating: gameSession.player2_id === user.id ? user.eloRating : opponent.eloRating,
             isCurrentPlayer: gameSession.current_turn_player_id === gameSession.player2_id
           }}
           currentTurnPlayerId={gameSession.current_turn_player_id || ''}
-          questionsRemaining={25 - (gameSession.board_state?.answeredQuestions?.length || 0)}
+          questionsRemaining={0}
           gamePhase={gameSession.status}
         />
 
@@ -306,8 +330,8 @@ export default function GamePage({ params }: GamePageProps) {
           <GameBoard
             questions={questions}
             categories={categories}
-            selectedQuestions={new Set(gameSession.board_state?.selectedQuestions || [])}
-            answeredQuestions={new Set(gameSession.board_state?.answeredQuestions || [])}
+            selectedQuestions={new Set()}
+            answeredQuestions={new Set()}
             currentPlayerTurn={gameSession.current_turn_player_id || ''}
             currentPlayerId={user.id}
             onQuestionSelect={handleQuestionClick}
@@ -316,29 +340,29 @@ export default function GamePage({ params }: GamePageProps) {
         </div>
 
         {/* Question Card */}
-        {gameState.currentQuestion && (
+        {gameState.current_question && (
           <QuestionCard
-            question={gameState.currentQuestion}
-            categoryName={gameState.currentQuestion.category_id}
-            pointValue={gameState.currentQuestion.point_value}
-            isOpen={!!gameState.currentQuestion}
+            question={gameState.current_question}
+            categoryName={gameState.current_question.category_id}
+            pointValue={gameState.current_question.point_value}
+            isOpen={!!gameState.current_question}
             onClose={() => resetGameState()}
             buzzerEnabled={buzzerEnabled}
-            buzzerWinner={gameState.buzzerWinner}
+            buzzerWinner={gameState.buzzed_player_id}
             timeRemaining={answerTimeRemaining}
             onBuzzerPress={handleBuzzerClick}
             onAnswerSubmit={handleAnswerSubmit}
             isAnswering={isAnswering}
             currentPlayerId={user.id}
             playerNames={{
-              [user.id]: user.display_name || user.username,
-              [opponent.id]: opponent.display_name || opponent.username
+              [user.id]: user.displayName || user.username,
+              [opponent.id]: opponent.displayName || opponent.username
             }}
           />
         )}
 
         {/* Buzzer Button */}
-        {gameState.currentQuestion && buzzerEnabled && (
+        {gameState.current_question && buzzerEnabled && (
           <div className="fixed bottom-8 left-1/2 transform -translate-x-1/2 z-50">
             <BuzzerButton
               enabled={buzzerEnabled}

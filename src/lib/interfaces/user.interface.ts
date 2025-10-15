@@ -1,4 +1,22 @@
-import { User, UserInsert, UserUpdate } from '@/types/game.types'
+import { User, UserInsert, UserUpdate, Player } from '@/types/game.types'
+
+interface MatchHistoryItem {
+  id: string
+  player1: Player
+  player2: Player
+  winner: Player | null
+  created_at: string
+  completed_at: string | null
+}
+
+interface UserGameStats {
+  totalGames: number
+  wins: number
+  losses: number
+  winRate: number
+  averageScore: number
+  currentStreak: number
+}
 
 export interface UserServiceInterface {
   /**
@@ -29,12 +47,12 @@ export interface UserServiceInterface {
   /**
    * Get user's match history
    */
-  getUserMatchHistory(userId: string, limit?: number): Promise<any[]>
+  getUserMatchHistory(userId: string, limit?: number): Promise<MatchHistoryItem[]>
 
   /**
    * Get user's game statistics
    */
-  getUserGameStats(userId: string): Promise<any>
+  getUserGameStats(userId: string): Promise<UserGameStats | null>
 
   /**
    * Get leaderboard (top players by ELO)

@@ -125,7 +125,7 @@ export async function selectQuestionsForGame(gameSessionId: string): Promise<Gam
 /**
  * Get questions for a game session
  */
-export async function getGameQuestions(gameSessionId: string): Promise<any[]> {
+export async function getGameQuestions(gameSessionId: string): Promise<GameQuestion[]> {
   const supabase = createClient()
   
   const { data, error } = await supabase

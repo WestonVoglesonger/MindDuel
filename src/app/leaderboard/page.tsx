@@ -8,7 +8,7 @@ import { Trophy, Crown, Medal, Target } from 'lucide-react'
 import Link from 'next/link'
 
 export default async function LeaderboardPage() {
-  const supabase = createClient()
+  const supabase = await createClient()
   const { data: { user: authUser } } = await supabase.auth.getUser()
   const userService = new UserService()
 

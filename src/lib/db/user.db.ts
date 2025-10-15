@@ -1,6 +1,24 @@
 import { createClient } from '@/lib/supabase/server'
 import { Player } from '@/types/game.types'
 
+interface MatchHistoryItem {
+  id: string
+  player1: Player
+  player2: Player
+  winner: Player | null
+  created_at: string
+  completed_at: string | null
+}
+
+interface UserGameStats {
+  totalGames: number
+  wins: number
+  losses: number
+  winRate: number
+  averageScore: number
+  currentStreak: number
+}
+
 type UserInsert = {
   id: string
   username: string
@@ -33,7 +51,17 @@ export async function getUserById(userId: string): Promise<Player | null> {
     return null
   }
 
-  return data
+  // Transform database result to Player interface
+  return {
+    id: data.id,
+    username: data.username,
+    displayName: data.display_name || data.username,
+    avatarUrl: data.avatar_url,
+    eloRating: data.elo_rating,
+    gamesPlayed: 0, // TODO: Add to database schema
+    gamesWon: 0, // TODO: Add to database schema
+    isOnline: true
+  }
 }
 
 /**
@@ -53,7 +81,17 @@ export async function getUserByUsername(username: string): Promise<Player | null
     return null
   }
 
-  return data
+  // Transform database result to Player interface
+  return {
+    id: data.id,
+    username: data.username,
+    displayName: data.display_name || data.username,
+    avatarUrl: data.avatar_url,
+    eloRating: data.elo_rating,
+    gamesPlayed: 0, // TODO: Add to database schema
+    gamesWon: 0, // TODO: Add to database schema
+    isOnline: true
+  }
 }
 
 /**
@@ -73,7 +111,17 @@ export async function createUser(userData: UserInsert): Promise<Player | null> {
     return null
   }
 
-  return data
+  // Transform database result to Player interface
+  return {
+    id: data.id,
+    username: data.username,
+    displayName: data.display_name || data.username,
+    avatarUrl: data.avatar_url,
+    eloRating: data.elo_rating,
+    gamesPlayed: 0, // TODO: Add to database schema
+    gamesWon: 0, // TODO: Add to database schema
+    isOnline: true
+  }
 }
 
 /**
@@ -94,7 +142,17 @@ export async function updateUser(userId: string, updates: UserUpdate): Promise<P
     return null
   }
 
-  return data
+  // Transform database result to Player interface
+  return {
+    id: data.id,
+    username: data.username,
+    displayName: data.display_name || data.username,
+    avatarUrl: data.avatar_url,
+    eloRating: data.elo_rating,
+    gamesPlayed: 0, // TODO: Add to database schema
+    gamesWon: 0, // TODO: Add to database schema
+    isOnline: true
+  }
 }
 
 /**
@@ -126,7 +184,7 @@ export async function isUsernameAvailable(username: string): Promise<boolean> {
  * Get user's match history
  * TODO: Implement when match_history table is added
  */
-export async function getUserMatchHistory(userId: string, limit: number = 10): Promise<any[]> {
+export async function getUserMatchHistory(userId: string, limit: number = 10): Promise<MatchHistoryItem[]> {
   // const supabase = await createClient()
   // 
   // const { data, error } = await supabase
@@ -156,7 +214,7 @@ export async function getUserMatchHistory(userId: string, limit: number = 10): P
  * Get user's game statistics
  * TODO: Implement when get_user_game_stats function is added
  */
-export async function getUserGameStats(userId: string): Promise<any> {
+export async function getUserGameStats(userId: string): Promise<UserGameStats | null> {
   // const supabase = await createClient()
   // 
   // const { data, error } = await supabase
@@ -171,11 +229,12 @@ export async function getUserGameStats(userId: string): Promise<any> {
   
   // Temporary return until function is implemented
   return {
-    total_games: 0,
-    games_won: 0,
-    win_rate: 0,
-    current_elo: 1000,
-    elo_tier: 'Novice'
+    totalGames: 0,
+    wins: 0,
+    losses: 0,
+    winRate: 0,
+    averageScore: 0,
+    currentStreak: 0
   }
 }
 
@@ -196,7 +255,17 @@ export async function getLeaderboard(limit: number = 100): Promise<Player[]> {
     return []
   }
 
-  return data || []
+  // Transform database results to Player interface
+  return (data || []).map(player => ({
+    id: player.id,
+    username: player.username,
+    displayName: player.display_name || player.username,
+    avatarUrl: player.avatar_url,
+    eloRating: player.elo_rating,
+    gamesPlayed: 0, // TODO: Add to database schema
+    gamesWon: 0, // TODO: Add to database schema
+    isOnline: true
+  }))
 }
 
 /**
@@ -217,5 +286,15 @@ export async function searchUsers(query: string, limit: number = 20): Promise<Pl
     return []
   }
 
-  return data || []
+  // Transform database results to Player interface
+  return (data || []).map(player => ({
+    id: player.id,
+    username: player.username,
+    displayName: player.display_name || player.username,
+    avatarUrl: player.avatar_url,
+    eloRating: player.elo_rating,
+    gamesPlayed: 0, // TODO: Add to database schema
+    gamesWon: 0, // TODO: Add to database schema
+    isOnline: true
+  }))
 }

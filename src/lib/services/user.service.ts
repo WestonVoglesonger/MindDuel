@@ -1,6 +1,25 @@
 import { UserServiceInterface } from '@/lib/interfaces/user.interface'
-import { User, UserInsert, UserUpdate } from '@/types/game.types'
+import { User, UserInsert, UserUpdate, Player } from '@/types/game.types'
 import * as userDb from '@/lib/db/user.db'
+
+// Type aliases for the interfaces defined in user.interface.ts
+interface MatchHistoryItem {
+  id: string
+  player1: Player
+  player2: Player
+  winner: Player | null
+  created_at: string
+  completed_at: string | null
+}
+
+interface UserGameStats {
+  totalGames: number
+  wins: number
+  losses: number
+  winRate: number
+  averageScore: number
+  currentStreak: number
+}
 import { createClient } from '@/lib/supabase/server'
 
 export class UserService implements UserServiceInterface {
@@ -24,11 +43,11 @@ export class UserService implements UserServiceInterface {
     return await userDb.isUsernameAvailable(username)
   }
 
-  async getUserMatchHistory(userId: string, limit: number = 10): Promise<any[]> {
+  async getUserMatchHistory(userId: string, limit: number = 10): Promise<MatchHistoryItem[]> {
     return await userDb.getUserMatchHistory(userId, limit)
   }
 
-  async getUserGameStats(userId: string): Promise<any> {
+  async getUserGameStats(userId: string): Promise<UserGameStats | null> {
     return await userDb.getUserGameStats(userId)
   }
 
