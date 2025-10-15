@@ -28,7 +28,7 @@ export type GameState = {
   current_round: string
   current_question: Question | null
   board: GameBoard
-  status: 'waiting_for_players' | 'in_progress' | 'completed' | 'cancelled'
+  status: 'waiting' | 'in_progress' | 'completed' | 'cancelled'
   turn_player_id: string | null
   buzzer_open: boolean
   buzzed_player_id: string | null

@@ -1,4 +1,4 @@
-import { createClient } from '@/lib/supabase/server'
+import { getSupabaseClient } from '@/lib/supabase/universal-client'
 import { Question, Category } from '@/types/game.types'
 
 type QuestionInsert = {
@@ -16,7 +16,7 @@ type QuestionInsert = {
  * Get all categories
  */
 export async function getCategories(): Promise<Category[]> {
-  const supabase = await createClient()
+  const supabase = await getSupabaseClient()
   
   const { data, error } = await supabase
     .from('categories')
@@ -35,7 +35,7 @@ export async function getCategories(): Promise<Category[]> {
  * Get category by ID
  */
 export async function getCategoryById(categoryId: string): Promise<Category | null> {
-  const supabase = await createClient()
+  const supabase = await getSupabaseClient()
   
   const { data, error } = await supabase
     .from('categories')
@@ -55,7 +55,7 @@ export async function getCategoryById(categoryId: string): Promise<Category | nu
  * Get questions by category
  */
 export async function getQuestionsByCategory(categoryId: string): Promise<Question[]> {
-  const supabase = await createClient()
+  const supabase = await getSupabaseClient()
   
   const { data, error } = await supabase
     .from('questions')
@@ -75,7 +75,7 @@ export async function getQuestionsByCategory(categoryId: string): Promise<Questi
  * Get random questions for a game
  */
 export async function getRandomQuestions(count: number, difficulty?: 'easy' | 'medium' | 'hard'): Promise<Question[]> {
-  const supabase = await createClient()
+  const supabase = await getSupabaseClient()
   
   let query = supabase
     .from('questions')
@@ -101,7 +101,7 @@ export async function getRandomQuestions(count: number, difficulty?: 'easy' | 'm
  * Get questions by IDs
  */
 export async function getQuestionsByIds(questionIds: string[]): Promise<Question[]> {
-  const supabase = await createClient()
+  const supabase = await getSupabaseClient()
   
   const { data, error } = await supabase
     .from('questions')
@@ -121,7 +121,7 @@ export async function getQuestionsByIds(questionIds: string[]): Promise<Question
  * Selects 5 questions from each of 5 different categories
  */
 export async function getQuestionsForGameBoard(): Promise<Question[]> {
-  const supabase = await createClient()
+  const supabase = await getSupabaseClient()
   
   // Get 5 random categories
   const { data: categories, error: categoriesError } = await supabase
@@ -175,7 +175,7 @@ export async function getQuestionsForGameBoard(): Promise<Question[]> {
  * Create a new category
  */
 export async function createCategory(name: string, description?: string): Promise<Category | null> {
-  const supabase = await createClient()
+  const supabase = await getSupabaseClient()
   
   const { data, error } = await supabase
     .from('categories')
@@ -195,7 +195,7 @@ export async function createCategory(name: string, description?: string): Promis
  * Create a new question
  */
 export async function createQuestion(questionData: QuestionInsert): Promise<Question | null> {
-  const supabase = await createClient()
+  const supabase = await getSupabaseClient()
   
   const { data, error } = await supabase
     .from('questions')
@@ -215,7 +215,7 @@ export async function createQuestion(questionData: QuestionInsert): Promise<Ques
  * Get question by ID
  */
 export async function getQuestionById(questionId: string): Promise<Question | null> {
-  const supabase = await createClient()
+  const supabase = await getSupabaseClient()
   
   const { data, error } = await supabase
     .from('questions')
@@ -235,7 +235,7 @@ export async function getQuestionById(questionId: string): Promise<Question | nu
  * Get total question count
  */
 export async function getQuestionCount(): Promise<number> {
-  const supabase = await createClient()
+  const supabase = await getSupabaseClient()
   
   const { count, error } = await supabase
     .from('questions')
@@ -253,7 +253,7 @@ export async function getQuestionCount(): Promise<number> {
  * Get questions by difficulty
  */
 export async function getQuestionsByDifficulty(difficulty: 'easy' | 'medium' | 'hard', limit: number = 50): Promise<Question[]> {
-  const supabase = await createClient()
+  const supabase = await getSupabaseClient()
   
   const { data, error } = await supabase
     .from('questions')

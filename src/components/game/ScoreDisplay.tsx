@@ -1,9 +1,6 @@
 'use client'
 
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
-import { Badge } from '@/components/ui/badge'
-import { Card, CardContent } from '@/components/ui/card'
-import { Trophy, Target } from 'lucide-react'
 
 interface Player {
   id: string
@@ -44,133 +41,116 @@ export function ScoreDisplay({
   const player2Tier = getEloTier(player2.eloRating)
 
   return (
-    <div className="w-full max-w-6xl mx-auto mb-6">
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        {/* Player 1 */}
-        <Card className={`transition-all duration-200 ${
-          currentTurnPlayerId === player1.id ? 'ring-2 ring-blue-500 shadow-lg' : ''
-        }`}>
-          <CardContent className="p-4">
-            <div className="flex items-center space-x-3">
-              <Avatar className="h-12 w-12">
-                <AvatarImage src={player1.avatarUrl || ''} alt={player1.username} />
-                <AvatarFallback>
-                  {player1.displayName.charAt(0).toUpperCase()}
-                </AvatarFallback>
-              </Avatar>
+    <div className="w-full max-w-6xl mx-auto mb-8">
+      {/* Main Score Display - Horizontal Layout */}
+      <div className="score-display">
+        <div className="flex items-center justify-between">
+          {/* Player 1 */}
+          <div className={`flex items-center space-x-4 flex-1 ${currentTurnPlayerId === player1.id ? 'player-active' : ''}`}>
+            <Avatar className="h-14 w-14">
+              <AvatarImage src={player1.avatarUrl || ''} alt={player1.username} />
+              <AvatarFallback className="bg-slate-800 text-slate-100 text-lg font-semibold">
+                {player1.displayName.charAt(0).toUpperCase()}
+              </AvatarFallback>
+            </Avatar>
+            
+            <div className="flex-1">
+              <div className="flex items-center space-x-3">
+                <h3 className="text-xl font-semibold text-slate-100">
+                  {player1.displayName}
+                </h3>
+                {currentTurnPlayerId === player1.id && (
+                  <div className="px-2 py-1 bg-cyan-400 text-white text-xs font-medium rounded">
+                    TURN
+                  </div>
+                )}
+              </div>
               
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center space-x-2">
-                  <h3 className="font-semibold text-lg truncate">
-                    {player1.displayName}
-                  </h3>
-                  {currentTurnPlayerId === player1.id && (
-                    <Badge variant="default" className="text-xs">
-                      <Target className="h-3 w-3 mr-1" />
-                      Turn
-                    </Badge>
-                  )}
-                </div>
-                
-                <div className="flex items-center space-x-2 mt-1">
-                  <Badge variant="secondary" className={`text-xs ${player1Tier.color} text-white`}>
-                    {player1Tier.tier}
-                  </Badge>
-                  <span className="text-sm text-muted-foreground">
-                    ELO: {player1.eloRating}
-                  </span>
-                </div>
+              <div className="flex items-center space-x-3 mt-1">
+                <span className="text-sm text-slate-400">
+                  {player1Tier.tier}
+                </span>
+                <span className="text-sm text-slate-400">
+                  ELO: {player1.eloRating}
+                </span>
               </div>
             </div>
             
-            <div className="mt-3 text-center">
-              <div className="text-3xl font-bold text-blue-600">
+            <div className="text-right">
+              <div className="text-score text-slate-100">
                 ${player1.score.toLocaleString()}
               </div>
             </div>
-          </CardContent>
-        </Card>
+          </div>
 
-        {/* Game Status */}
-        <Card className="bg-gradient-to-r from-blue-50 to-purple-50">
-          <CardContent className="p-4 text-center">
-            <div className="space-y-2">
-              <div className="flex items-center justify-center space-x-2">
-                <Trophy className="h-5 w-5 text-yellow-600" />
-                <span className="font-semibold text-lg">MindDuel</span>
-              </div>
-              
-              <div className="text-sm text-muted-foreground">
-                {questionsRemaining} questions remaining
-              </div>
-              
-              <Badge variant="outline" className="text-xs">
-                {gamePhase.replace('_', ' ').toUpperCase()}
-              </Badge>
-            </div>
-          </CardContent>
-        </Card>
+          {/* Center Divider */}
+          <div className="mx-8 h-16 w-px bg-slate-700"></div>
 
-        {/* Player 2 */}
-        <Card className={`transition-all duration-200 ${
-          currentTurnPlayerId === player2.id ? 'ring-2 ring-blue-500 shadow-lg' : ''
-        }`}>
-          <CardContent className="p-4">
-            <div className="flex items-center space-x-3">
-              <Avatar className="h-12 w-12">
-                <AvatarImage src={player2.avatarUrl || ''} alt={player2.username} />
-                <AvatarFallback>
-                  {player2.displayName.charAt(0).toUpperCase()}
-                </AvatarFallback>
-              </Avatar>
-              
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center space-x-2">
-                  <h3 className="font-semibold text-lg truncate">
-                    {player2.displayName}
-                  </h3>
-                  {currentTurnPlayerId === player2.id && (
-                    <Badge variant="default" className="text-xs">
-                      <Target className="h-3 w-3 mr-1" />
-                      Turn
-                    </Badge>
-                  )}
-                </div>
-                
-                <div className="flex items-center space-x-2 mt-1">
-                  <Badge variant="secondary" className={`text-xs ${player2Tier.color} text-white`}>
-                    {player2Tier.tier}
-                  </Badge>
-                  <span className="text-sm text-muted-foreground">
-                    ELO: {player2.eloRating}
-                  </span>
-                </div>
-              </div>
+          {/* Game Status */}
+          <div className="text-center min-w-[200px]">
+            <div className="text-lg font-semibold text-slate-100 mb-1">
+              MindDuel
             </div>
-            
-            <div className="mt-3 text-center">
-              <div className="text-3xl font-bold text-purple-600">
+            <div className="text-sm text-slate-400 mb-2">
+              {questionsRemaining} questions remaining
+            </div>
+            <div className="text-xs text-slate-400 uppercase tracking-wide">
+              {gamePhase.replace('_', ' ')}
+            </div>
+          </div>
+
+          {/* Center Divider */}
+          <div className="mx-8 h-16 w-px bg-slate-700"></div>
+
+          {/* Player 2 */}
+          <div className={`flex items-center space-x-4 flex-1 ${currentTurnPlayerId === player2.id ? 'player-active' : ''}`}>
+            <div className="text-left">
+              <div className="text-score text-slate-100">
                 ${player2.score.toLocaleString()}
               </div>
             </div>
-          </CardContent>
-        </Card>
+            
+            <div className="flex-1 text-right">
+              <div className="flex items-center justify-end space-x-3">
+                {currentTurnPlayerId === player2.id && (
+                  <div className="px-2 py-1 bg-cyan-400 text-white text-xs font-medium rounded">
+                    TURN
+                  </div>
+                )}
+                <h3 className="text-xl font-semibold text-slate-100">
+                  {player2.displayName}
+                </h3>
+              </div>
+              
+              <div className="flex items-center justify-end space-x-3 mt-1">
+                <span className="text-sm text-slate-400">
+                  ELO: {player2.eloRating}
+                </span>
+                <span className="text-sm text-slate-400">
+                  {player2Tier.tier}
+                </span>
+              </div>
+            </div>
+            
+            <Avatar className="h-14 w-14">
+              <AvatarImage src={player2.avatarUrl || ''} alt={player2.username} />
+              <AvatarFallback className="bg-slate-800 text-slate-100 text-lg font-semibold">
+                {player2.displayName.charAt(0).toUpperCase()}
+              </AvatarFallback>
+            </Avatar>
+          </div>
+        </div>
       </div>
 
       {/* Score Comparison */}
       <div className="mt-4 text-center">
-        <div className="inline-flex items-center space-x-4 text-sm text-muted-foreground">
-          <span>
-            {player1.score > player2.score ? '👑' : player2.score > player1.score ? '👑' : '🤝'}
-          </span>
-          <span>
-            {player1.score > player2.score 
-              ? `${player1.displayName} leads by $${(player1.score - player2.score).toLocaleString()}`
-              : player2.score > player1.score
-                ? `${player2.displayName} leads by $${(player2.score - player1.score).toLocaleString()}`
-                : 'Tied game!'
-            }
-          </span>
+        <div className="text-sm text-slate-400">
+          {player1.score > player2.score 
+            ? `${player1.displayName} leads by $${(player1.score - player2.score).toLocaleString()}`
+            : player2.score > player1.score
+              ? `${player2.displayName} leads by $${(player2.score - player1.score).toLocaleString()}`
+              : 'Tied game!'
+          }
         </div>
       </div>
     </div>

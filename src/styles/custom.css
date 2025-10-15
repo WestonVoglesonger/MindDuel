@@ -1,0 +1,166 @@
+/* MindDuel Custom Styles - Unique & Tasteful Design */
+
+/* Custom Color Variables */
+:root {
+  /* Dark sophisticated palette */
+  --mindduel-bg: #1a1d29;
+  --mindduel-surface: #252936;
+  --mindduel-border: #2f3447;
+  --mindduel-text-primary: #e8eaed;
+  --mindduel-text-secondary: #9ca3af;
+  
+  /* Single accent color - use sparingly */
+  --mindduel-accent: #00d4ff;
+  --mindduel-accent-hover: #00b8e6;
+  
+  /* Status colors */
+  --mindduel-success: #10b981;
+  --mindduel-error: #ef4444;
+  --mindduel-warning: #f59e0b;
+  
+  /* Game board specific */
+  --mindduel-tile-available: var(--mindduel-surface);
+  --mindduel-tile-selected: var(--mindduel-accent);
+  --mindduel-tile-answered: #1f2937;
+  --mindduel-tile-border: var(--mindduel-border);
+  --mindduel-tile-border-hover: var(--mindduel-accent);
+}
+
+/* Custom Button Styles */
+.btn-primary {
+  @apply bg-mindduel-accent text-white font-semibold px-6 py-3 rounded-lg;
+  @apply hover:bg-mindduel-accent-hover transition-colors duration-200;
+  @apply focus:outline-none focus:ring-2 focus:ring-mindduel-accent focus:ring-offset-2 focus:ring-offset-mindduel-bg;
+}
+
+.btn-secondary {
+  @apply bg-transparent border border-mindduel-border text-mindduel-text-primary font-semibold px-6 py-3 rounded-lg;
+  @apply hover:bg-mindduel-surface hover:border-mindduel-accent transition-all duration-200;
+  @apply focus:outline-none focus:ring-2 focus:ring-mindduel-accent focus:ring-offset-2 focus:ring-offset-mindduel-bg;
+}
+
+.btn-ghost {
+  @apply bg-transparent text-mindduel-text-secondary font-medium px-4 py-2 rounded-lg;
+  @apply hover:bg-mindduel-surface hover:text-mindduel-text-primary transition-all duration-200;
+}
+
+/* Custom Input Styles */
+.input-custom {
+  @apply bg-mindduel-surface border border-mindduel-border text-mindduel-text-primary px-4 py-3 rounded-lg;
+  @apply focus:outline-none focus:ring-2 focus:ring-mindduel-accent focus:border-transparent;
+  @apply placeholder:text-mindduel-text-secondary;
+}
+
+/* Custom Modal Overlay */
+.modal-overlay {
+  @apply fixed inset-0 bg-black/50 backdrop-blur-sm z-50;
+  @apply flex items-center justify-center p-4;
+}
+
+.modal-content {
+  @apply bg-mindduel-surface border border-mindduel-border rounded-xl shadow-2xl;
+  @apply max-w-4xl w-full max-h-[90vh] overflow-y-auto;
+}
+
+/* Game Board Tile Styles */
+.game-tile {
+  @apply aspect-square cursor-pointer transition-all duration-200 rounded-lg border-2;
+  @apply flex items-center justify-center font-bold text-lg;
+}
+
+.game-tile-available {
+  @apply bg-mindduel-tile-available border-mindduel-tile-border text-mindduel-text-primary;
+  @apply hover:border-mindduel-tile-border-hover hover:shadow-lg hover:shadow-mindduel-accent/20;
+}
+
+.game-tile-selected {
+  @apply bg-mindduel-tile-selected border-mindduel-tile-selected text-white;
+}
+
+.game-tile-answered {
+  @apply bg-mindduel-tile-answered border-mindduel-tile-border text-mindduel-text-secondary cursor-not-allowed;
+}
+
+/* Category Header */
+.category-header {
+  @apply bg-mindduel-surface border border-mindduel-border rounded-lg p-4 text-center;
+  @apply font-semibold text-mindduel-text-primary;
+}
+
+/* Score Display */
+.score-display {
+  @apply bg-mindduel-surface border border-mindduel-border rounded-xl p-6;
+}
+
+.score-number {
+  @apply text-4xl font-bold text-mindduel-text-primary;
+}
+
+.player-active {
+  @apply border-l-4 border-l-mindduel-accent;
+}
+
+/* Typography */
+.text-display {
+  @apply text-4xl md:text-6xl font-bold text-mindduel-text-primary tracking-tight;
+}
+
+.text-heading {
+  @apply text-2xl md:text-3xl font-bold text-mindduel-text-primary;
+}
+
+.text-body {
+  @apply text-base text-mindduel-text-primary leading-relaxed;
+}
+
+.text-muted {
+  @apply text-sm text-mindduel-text-secondary;
+}
+
+.text-score {
+  @apply font-mono text-3xl font-bold text-mindduel-text-primary;
+}
+
+/* Animations */
+@keyframes pulse-cyan {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+.pulse-cyan {
+  animation: pulse-cyan 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+/* Focus states */
+.focus-ring {
+  @apply focus:outline-none focus:ring-2 focus:ring-mindduel-accent focus:ring-offset-2 focus:ring-offset-mindduel-bg;
+}
+
+/* Utility classes */
+.bg-mindduel {
+  background-color: var(--mindduel-bg);
+}
+
+.bg-mindduel-surface {
+  background-color: var(--mindduel-surface);
+}
+
+.text-mindduel-primary {
+  color: var(--mindduel-text-primary);
+}
+
+.text-mindduel-secondary {
+  color: var(--mindduel-text-secondary);
+}
+
+.border-mindduel {
+  border-color: var(--mindduel-border);
+}
+
+.border-mindduel-accent {
+  border-color: var(--mindduel-accent);
+}

@@ -110,27 +110,30 @@ export type Database = {
       }
       matchmaking_queue: {
         Row: {
-          created_at: string
           id: string
-          player_id: string
+          user_id: string
+          elo_rating: number
+          joined_at: string
           status: Database['public']['Enums']['queue_status']
         }
         Insert: {
-          created_at?: string
           id?: string
-          player_id: string
+          user_id: string
+          elo_rating: number
+          joined_at?: string
           status?: Database['public']['Enums']['queue_status']
         }
         Update: {
-          created_at?: string
           id?: string
-          player_id?: string
+          user_id?: string
+          elo_rating?: number
+          joined_at?: string
           status?: Database['public']['Enums']['queue_status']
         }
         Relationships: [
           {
-            foreignKeyName: 'matchmaking_queue_player_id_fkey'
-            columns: ['player_id']
+            foreignKeyName: 'matchmaking_queue_user_id_fkey'
+            columns: ['user_id']
             isOneToOne: false
             referencedRelation: 'users'
             referencedColumns: ['id']
@@ -227,7 +230,7 @@ export type Database = {
       [_ in never]: never
     }
     Enums: {
-      game_status: 'waiting_for_players' | 'in_progress' | 'completed' | 'cancelled'
+      game_status: 'waiting' | 'in_progress' | 'completed' | 'cancelled'
       queue_status: 'waiting' | 'matched' | 'cancelled'
     }
     CompositeTypes: {

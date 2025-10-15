@@ -1,17 +1,13 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
 import { Progress } from '@/components/ui/progress'
 import { useMatchmaking } from '@/hooks/useMatchmaking'
-import { Search, Users, Clock, Zap, Trophy } from 'lucide-react'
 
 interface MatchmakingQueueProps {
   userId: string
   eloRating: number
-  onMatchFound: (opponentId: string) => void
+  onMatchFound: (gameSessionId: string) => void
   onError: (error: Error) => void
 }
 
@@ -26,6 +22,7 @@ export function MatchmakingQueue({
     loading,
     error,
     startMatchmaking,
+    startTestMatch,
     cancelMatchmaking,
     getQueueStats,
     isSearching,
@@ -56,34 +53,16 @@ export function MatchmakingQueue({
     await startMatchmaking()
   }
 
+  const handleStartTestMatch = async () => {
+    const sessionId = await startTestMatch()
+    if (!sessionId) {
+      return
+    }
+    onMatchFound(sessionId)
+  }
+
   const handleCancelMatchmaking = async () => {
     await cancelMatchmaking()
-  }
-
-  const getStatusIcon = () => {
-    switch (status.status) {
-      case 'searching':
-        return <Search className="h-5 w-5 animate-spin" />
-      case 'found':
-        return <Zap className="h-5 w-5 text-green-600" />
-      case 'error':
-        return <Users className="h-5 w-5 text-red-600" />
-      default:
-        return <Users className="h-5 w-5" />
-    }
-  }
-
-  const getStatusColor = () => {
-    switch (status.status) {
-      case 'searching':
-        return 'text-blue-600'
-      case 'found':
-        return 'text-green-600'
-      case 'error':
-        return 'text-red-600'
-      default:
-        return 'text-gray-600'
-    }
   }
 
   const getStatusMessage = () => {
@@ -100,179 +79,151 @@ export function MatchmakingQueue({
   }
 
   return (
-    <div className="w-full max-w-2xl mx-auto space-y-6">
+    <div className="w-full max-w-2xl mx-auto">
       {/* Main Matchmaking Card */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center space-x-2">
-            {getStatusIcon()}
-            <span className={getStatusColor()}>
-              {getStatusMessage()}
-            </span>
-          </CardTitle>
-          <CardDescription>
-            Find an opponent with similar skill level for a fair match
-          </CardDescription>
-        </CardHeader>
-        
-        <CardContent className="space-y-6">
-          {/* ELO Display */}
-          <div className="text-center">
-            <div className="text-2xl font-bold text-blue-600">
-              ELO: {eloRating}
-            </div>
-            <Badge variant="secondary" className="mt-2">
-              <Trophy className="h-3 w-3 mr-1" />
-              {eloRating < 1000 ? 'Novice' : 
-               eloRating < 1200 ? 'Bronze' :
-               eloRating < 1400 ? 'Silver' :
-               eloRating < 1600 ? 'Gold' :
-               eloRating < 1800 ? 'Platinum' :
-               eloRating < 2000 ? 'Diamond' : 'Master'}
-            </Badge>
+      <div className="score-display">
+        {/* Header */}
+        <div className="text-center mb-6">
+          <h2 className="text-heading mb-2">Find Your Match</h2>
+          <p className="text-muted">Find an opponent with similar skill level for a fair match</p>
+        </div>
+
+        {/* ELO Display */}
+        <div className="text-center mb-6">
+          <div className="text-score text-cyan-400 mb-2">
+            ELO: {eloRating}
           </div>
+          <div className="text-sm text-slate-400">
+            {eloRating < 1000 ? 'Novice' : 
+             eloRating < 1200 ? 'Bronze' :
+             eloRating < 1400 ? 'Silver' :
+             eloRating < 1600 ? 'Gold' :
+             eloRating < 1800 ? 'Platinum' :
+             eloRating < 2000 ? 'Diamond' : 'Master'}
+          </div>
+        </div>
 
-          {/* Search Progress */}
-          {isSearching && (
-            <div className="space-y-2">
-              <div className="flex justify-between text-sm">
-                <span>Searching...</span>
-                <span>{status.timeElapsed}s</span>
-              </div>
-              <Progress 
-                value={(status.timeElapsed / status.estimatedWaitTime) * 100} 
-                className="h-2"
-              />
-              <p className="text-xs text-muted-foreground text-center">
-                Searching within ±{status.eloRange} ELO range
-              </p>
+        {/* Status Message */}
+        <div className="text-center mb-6">
+          <div className={`text-lg font-semibold ${
+            status.status === 'searching' ? 'text-cyan-400' :
+            status.status === 'found' ? 'text-emerald-500' :
+            status.status === 'error' ? 'text-red-500' :
+            'text-slate-100'
+          }`}>
+            {getStatusMessage()}
+          </div>
+        </div>
+
+        {/* Search Progress */}
+        {isSearching && (
+          <div className="space-y-3 mb-6">
+            <div className="flex justify-between text-sm text-slate-400">
+              <span>Searching...</span>
+              <span>{status.timeElapsed}s</span>
             </div>
-          )}
+            <Progress 
+              value={(status.timeElapsed / status.estimatedWaitTime) * 100} 
+              className="h-2"
+            />
+            <p className="text-xs text-slate-400 text-center">
+              Searching within ±{status.eloRange} ELO range
+            </p>
+          </div>
+        )}
 
-          {/* Action Buttons */}
-          <div className="flex justify-center space-x-4">
-            {isIdle ? (
-              <Button
+        {/* Action Buttons */}
+        <div className="flex flex-col sm:flex-row gap-4 justify-center mb-6">
+          {isIdle ? (
+            <>
+              <button
                 onClick={handleStartMatchmaking}
                 disabled={loading}
-                size="lg"
-                className="text-lg px-8 py-6"
+                className="btn-primary text-lg px-8 py-4"
               >
-                <Search className="mr-2 h-5 w-5" />
                 Find Match
-              </Button>
-            ) : isSearching ? (
-              <Button
+              </button>
+              <button
+                onClick={handleStartTestMatch}
+                disabled={loading}
+                className="btn-secondary text-lg px-8 py-4"
+              >
+                Test Match
+              </button>
+            </>
+          ) : isSearching ? (
+            <>
+              <button
                 onClick={handleCancelMatchmaking}
                 disabled={loading}
-                variant="outline"
-                size="lg"
-                className="text-lg px-8 py-6"
+                className="btn-secondary text-lg px-8 py-4"
               >
                 Cancel Search
-              </Button>
-            ) : isFound ? (
-              <Button
-                disabled
-                size="lg"
-                className="text-lg px-8 py-6 bg-green-600"
+              </button>
+              <button
+                onClick={handleStartTestMatch}
+                disabled={loading}
+                className="btn-ghost text-lg px-8 py-4"
               >
-                <Zap className="mr-2 h-5 w-5" />
-                Match Found!
-              </Button>
-            ) : (
-              <Button
+                Switch to Test Match
+              </button>
+            </>
+          ) : isFound ? (
+            <button
+              disabled
+              className="btn-primary text-lg px-8 py-4 bg-emerald-500 hover:bg-emerald-500"
+            >
+              Match Found!
+            </button>
+          ) : (
+            <>
+              <button
                 onClick={handleStartMatchmaking}
                 disabled={loading}
-                size="lg"
-                className="text-lg px-8 py-6"
+                className="btn-primary text-lg px-8 py-4"
               >
                 Try Again
-              </Button>
-            )}
-          </div>
-
-          {/* Error Display */}
-          {error && (
-            <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-              <p className="text-red-800 text-sm">{error}</p>
-            </div>
+              </button>
+              <button
+                onClick={handleStartTestMatch}
+                disabled={loading}
+                className="btn-secondary text-lg px-8 py-4"
+              >
+                Test Match
+              </button>
+            </>
           )}
-        </CardContent>
-      </Card>
+        </div>
 
-      {/* Queue Statistics */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-lg">Queue Statistics</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-3 gap-4 text-center">
-            <div>
-              <div className="text-2xl font-bold text-blue-600">
-                {queueStats.totalInQueue}
-              </div>
-              <div className="text-sm text-muted-foreground">Players Online</div>
+        {/* Queue Statistics - Inline */}
+        <div className="flex justify-center space-x-8 text-center border-t border-slate-700 pt-6">
+          <div>
+            <div className="text-xl font-bold text-cyan-400">
+              {queueStats.totalInQueue}
             </div>
-            <div>
-              <div className="text-2xl font-bold text-green-600">
-                {queueStats.averageElo}
-              </div>
-              <div className="text-sm text-muted-foreground">Avg ELO</div>
-            </div>
-            <div>
-              <div className="text-2xl font-bold text-purple-600">
-                {queueStats.averageWaitTime}s
-              </div>
-              <div className="text-sm text-muted-foreground">Avg Wait</div>
-            </div>
+            <div className="text-xs text-slate-400">Players Online</div>
           </div>
-        </CardContent>
-      </Card>
+          <div>
+            <div className="text-xl font-bold text-emerald-500">
+              {queueStats.averageElo}
+            </div>
+            <div className="text-xs text-slate-400">Avg ELO</div>
+          </div>
+          <div>
+            <div className="text-xl font-bold text-slate-100">
+              {queueStats.averageWaitTime}s
+            </div>
+            <div className="text-xs text-slate-400">Avg Wait</div>
+          </div>
+        </div>
 
-      {/* Matchmaking Info */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-lg">How Matchmaking Works</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-3">
-          <div className="flex items-start space-x-3">
-            <div className="w-6 h-6 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
-              <span className="text-xs font-bold text-blue-600">1</span>
-            </div>
-            <div>
-              <p className="text-sm font-medium">ELO-Based Matching</p>
-              <p className="text-xs text-muted-foreground">
-                We find opponents within ±100 ELO of your rating for fair matches
-              </p>
-            </div>
+        {/* Error Display */}
+        {error && (
+          <div className="mt-6 bg-red-500/10 border border-red-500/20 rounded-lg p-4">
+            <p className="text-red-500 text-sm">{error}</p>
           </div>
-          
-          <div className="flex items-start space-x-3">
-            <div className="w-6 h-6 bg-green-100 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
-              <span className="text-xs font-bold text-green-600">2</span>
-            </div>
-            <div>
-              <p className="text-sm font-medium">Expanding Search</p>
-              <p className="text-xs text-muted-foreground">
-                If no match is found, we expand the ELO range every 10 seconds
-              </p>
-            </div>
-          </div>
-          
-          <div className="flex items-start space-x-3">
-            <div className="w-6 h-6 bg-purple-100 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
-              <span className="text-xs font-bold text-purple-600">3</span>
-            </div>
-            <div>
-              <p className="text-sm font-medium">Quick Games</p>
-              <p className="text-xs text-muted-foreground">
-                Games last 10-15 minutes with 25 questions in a 5x5 grid
-              </p>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
+        )}
+      </div>
     </div>
   )
 }

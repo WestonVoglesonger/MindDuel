@@ -65,9 +65,9 @@ export default function LobbyPage() {
     loadOnlinePlayers()
   }, [userService])
 
-  const handleMatchFound = (opponentId: string) => {
+  const handleMatchFound = (gameSessionId: string) => {
     // Navigate to game page
-    router.push(`/game/${opponentId}`)
+    router.push(`/game/${gameSessionId}`)
   }
 
   const handleError = (error: Error) => {

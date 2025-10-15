@@ -13,7 +13,7 @@ export class GameService implements GameServiceInterface {
         id: 'mock-game-id',
         player1_id: player1Id,
         player2_id: player2Id,
-        status: 'waiting_for_players',
+        status: 'waiting',
         player1_score: 0,
         player2_score: 0,
         current_turn_player_id: player1Id,

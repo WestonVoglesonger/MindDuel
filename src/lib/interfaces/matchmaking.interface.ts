@@ -7,6 +7,16 @@ interface MatchmakingStatus {
 
 export interface MatchmakingServiceInterface {
   /**
+   * Begin standard matchmaking (queue + polling)
+   */
+  startMatchmaking(userId: string, eloRating: number): Promise<boolean>
+
+  /**
+   * Start a deterministic local test match and return the session identifier.
+   */
+  startTestMatch(userId: string): Promise<string>
+
+  /**
    * Enter matchmaking queue
    */
   enterMatchmaking(userId: string, eloRating: number): Promise<boolean>

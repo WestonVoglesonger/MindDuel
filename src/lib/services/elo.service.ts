@@ -1,4 +1,4 @@
-import { createClient } from '@/lib/supabase/server'
+import { getSupabaseClient } from '@/lib/supabase/universal-client'
 import { calculateEloChanges } from '@/lib/utils/elo-calculator'
 
 export class EloService {
@@ -15,7 +15,7 @@ export class EloService {
     player1Change: number
     player2Change: number
   } | null> {
-    const supabase = await createClient()
+    const supabase = await getSupabaseClient()
 
     try {
       // Get current ratings

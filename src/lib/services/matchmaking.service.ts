@@ -91,7 +91,7 @@ export class MatchmakingService implements MatchmakingServiceInterface {
         }
       }
 
-      const timeElapsed = Date.now() - new Date(queueEntry.created_at).getTime()
+      const timeElapsed = Date.now() - new Date(queueEntry.joined_at).getTime()
       const estimatedWaitTime = await this.getEstimatedWaitTime(1200) // Default ELO rating
 
       return {
@@ -195,6 +195,17 @@ export class MatchmakingService implements MatchmakingServiceInterface {
       console.error('Error starting matchmaking:', error)
       return false
     }
+  }
+
+  async startTestMatch(userId: string): Promise<string> {
+    const uniqueSegment =
+      typeof crypto !== 'undefined' && 'randomUUID' in crypto
+        ? crypto.randomUUID()
+        : Math.random().toString(36).slice(2)
+
+    const testGameId = `test-${uniqueSegment}`
+    console.log(`Test match created for user ${userId}: ${testGameId}`)
+    return testGameId
   }
 
   /**

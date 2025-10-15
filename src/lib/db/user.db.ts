@@ -1,4 +1,4 @@
-import { createClient } from '@/lib/supabase/server'
+import { getSupabaseClient } from '@/lib/supabase/universal-client'
 import { Player } from '@/types/game.types'
 
 interface MatchHistoryItem {
@@ -38,7 +38,7 @@ type UserUpdate = {
  * Get user by ID
  */
 export async function getUserById(userId: string): Promise<Player | null> {
-  const supabase = await createClient()
+  const supabase = await getSupabaseClient()
   
   const { data, error } = await supabase
     .from('users')
@@ -68,7 +68,7 @@ export async function getUserById(userId: string): Promise<Player | null> {
  * Get user by username
  */
 export async function getUserByUsername(username: string): Promise<Player | null> {
-  const supabase = await createClient()
+  const supabase = await getSupabaseClient()
   
   const { data, error } = await supabase
     .from('users')
@@ -98,7 +98,7 @@ export async function getUserByUsername(username: string): Promise<Player | null
  * Create a new user profile
  */
 export async function createUser(userData: UserInsert): Promise<Player | null> {
-  const supabase = await createClient()
+  const supabase = await getSupabaseClient()
   
   const { data, error } = await supabase
     .from('users')
@@ -128,7 +128,7 @@ export async function createUser(userData: UserInsert): Promise<Player | null> {
  * Update user profile
  */
 export async function updateUser(userId: string, updates: UserUpdate): Promise<Player | null> {
-  const supabase = await createClient()
+  const supabase = await getSupabaseClient()
   
   const { data, error } = await supabase
     .from('users')
@@ -159,7 +159,7 @@ export async function updateUser(userId: string, updates: UserUpdate): Promise<P
  * Check if username is available
  */
 export async function isUsernameAvailable(username: string): Promise<boolean> {
-  const supabase = await createClient()
+  const supabase = await getSupabaseClient()
   
   const { data, error } = await supabase
     .from('users')
@@ -185,7 +185,7 @@ export async function isUsernameAvailable(username: string): Promise<boolean> {
  * TODO: Implement when match_history table is added
  */
 export async function getUserMatchHistory(userId: string, limit: number = 10): Promise<MatchHistoryItem[]> {
-  // const supabase = await createClient()
+  // const supabase = await getSupabaseClient()
   // 
   // const { data, error } = await supabase
   //   .from('match_history')
@@ -215,7 +215,7 @@ export async function getUserMatchHistory(userId: string, limit: number = 10): P
  * TODO: Implement when get_user_game_stats function is added
  */
 export async function getUserGameStats(userId: string): Promise<UserGameStats | null> {
-  // const supabase = await createClient()
+  // const supabase = await getSupabaseClient()
   // 
   // const { data, error } = await supabase
   //   .rpc('get_user_game_stats', { p_user_id: userId })
@@ -242,7 +242,7 @@ export async function getUserGameStats(userId: string): Promise<UserGameStats | 
  * Get leaderboard (top players by ELO)
  */
 export async function getLeaderboard(limit: number = 100): Promise<Player[]> {
-  const supabase = await createClient()
+  const supabase = await getSupabaseClient()
   
   const { data, error } = await supabase
     .from('users')
@@ -272,7 +272,7 @@ export async function getLeaderboard(limit: number = 100): Promise<Player[]> {
  * Search users by username
  */
 export async function searchUsers(query: string, limit: number = 20): Promise<Player[]> {
-  const supabase = await createClient()
+  const supabase = await getSupabaseClient()
   
   const { data, error } = await supabase
     .from('users')

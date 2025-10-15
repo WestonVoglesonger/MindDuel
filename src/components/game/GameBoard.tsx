@@ -1,8 +1,6 @@
 'use client'
 
 import { useState } from 'react'
-import { Card, CardContent } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
 import { Question } from '@/types/game.types'
 import { GAME_CONFIG } from '@/constants/game-config'
 
@@ -85,20 +83,18 @@ export function GameBoard({
   return (
     <div className="w-full max-w-4xl mx-auto">
       {/* Category Headers */}
-      <div className="grid grid-cols-5 gap-2 mb-4">
+      <div className="grid grid-cols-5 gap-3 mb-6">
         {categories.map((category, index) => (
-          <Card key={index} className="bg-gradient-to-r from-blue-600 to-purple-600 text-white">
-            <CardContent className="p-4 text-center">
-              <h3 className="font-bold text-sm md:text-base truncate">
-                {category}
-              </h3>
-            </CardContent>
-          </Card>
+          <div key={index} className="category-header">
+            <h3 className="text-sm md:text-base font-semibold truncate">
+              {category}
+            </h3>
+          </div>
         ))}
       </div>
 
       {/* Question Grid */}
-      <div className="grid grid-cols-5 gap-2">
+      <div className="grid grid-cols-5 gap-3">
         {Array.from({ length: GAME_CONFIG.BOARD_SIZE.ROWS }, (_, row) =>
           Array.from({ length: GAME_CONFIG.BOARD_SIZE.COLS }, (_, col) => {
             const question = getQuestionAtPosition(row, col)
@@ -109,71 +105,51 @@ export function GameBoard({
             const isAnswered = isQuestionAnswered(row, col)
             const isHovered = hoveredPosition === position
 
+            let tileClass = 'game-tile '
+            if (isAnswered) {
+              tileClass += 'game-tile-answered'
+            } else if (isSelected) {
+              tileClass += 'game-tile-selected'
+            } else if (isSelectable) {
+              tileClass += 'game-tile-available'
+            } else {
+              tileClass += 'game-tile-answered' // Disabled state
+            }
+
             return (
-              <Card
+              <div
                 key={`${row}-${col}`}
-                className={`
-                  aspect-square cursor-pointer transition-all duration-200
-                  ${isSelectable 
-                    ? 'hover:scale-105 hover:shadow-lg bg-gradient-to-br from-yellow-400 to-yellow-600 text-white' 
-                    : isAnswered 
-                      ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                      : isSelected
-                        ? 'bg-blue-500 text-white'
-                        : 'bg-gray-100 text-gray-700 cursor-not-allowed'
-                  }
-                  ${isHovered && isSelectable ? 'ring-2 ring-blue-500 ring-offset-2' : ''}
-                `}
+                className={tileClass}
                 onClick={() => handleQuestionClick(row, col)}
                 onMouseEnter={() => setHoveredPosition(position)}
                 onMouseLeave={() => setHoveredPosition(null)}
               >
-                <CardContent className="flex items-center justify-center h-full p-2">
-                  <div className="text-center">
-                    {isAnswered ? (
-                      <div className="text-xs">✓</div>
-                    ) : isSelected ? (
-                      <div className="text-xs">SELECTED</div>
-                    ) : (
-                      <div className="font-bold text-lg md:text-xl">
-                        ${pointValue}
-                      </div>
-                    )}
+                {isAnswered ? (
+                  <div className="text-sm">✓</div>
+                ) : isSelected ? (
+                  <div className="text-xs font-medium">SELECTED</div>
+                ) : (
+                  <div className="text-lg md:text-xl font-bold">
+                    ${pointValue}
                   </div>
-                </CardContent>
-              </Card>
+                )}
+              </div>
             )
           })
         )}
       </div>
 
       {/* Game Status */}
-      <div className="mt-6 text-center">
+      <div className="mt-8 text-center">
         {currentPlayerTurn === currentPlayerId ? (
-          <Badge variant="default" className="text-lg px-4 py-2">
+          <div className="inline-flex items-center px-6 py-3 bg-cyan-400 text-white font-semibold rounded-lg">
             Your Turn - Select a Question
-          </Badge>
+          </div>
         ) : (
-          <Badge variant="secondary" className="text-lg px-4 py-2">
+          <div className="inline-flex items-center px-6 py-3 bg-slate-800 border border-slate-700 text-slate-400 font-medium rounded-lg">
             Waiting for Opponent...
-          </Badge>
+          </div>
         )}
-      </div>
-
-      {/* Legend */}
-      <div className="mt-4 flex justify-center space-x-4 text-sm text-muted-foreground">
-        <div className="flex items-center space-x-1">
-          <div className="w-3 h-3 bg-yellow-500 rounded"></div>
-          <span>Available</span>
-        </div>
-        <div className="flex items-center space-x-1">
-          <div className="w-3 h-3 bg-blue-500 rounded"></div>
-          <span>Selected</span>
-        </div>
-        <div className="flex items-center space-x-1">
-          <div className="w-3 h-3 bg-gray-300 rounded"></div>
-          <span>Answered</span>
-        </div>
       </div>
     </div>
   )

@@ -35,7 +35,7 @@ interface UserGameStats {
   averageScore: number
   currentStreak: number
 }
-import { createClient } from '@/lib/supabase/server'
+import { getSupabaseClient } from '@/lib/supabase/universal-client'
 
 export class UserService implements UserServiceInterface {
   async getUserById(userId: string): Promise<User | null> {
@@ -75,7 +75,7 @@ export class UserService implements UserServiceInterface {
   }
 
   async uploadAvatar(userId: string, file: File): Promise<string | null> {
-    const supabase = await createClient()
+    const supabase = await getSupabaseClient()
     
     try {
       // Generate unique filename
@@ -112,7 +112,7 @@ export class UserService implements UserServiceInterface {
   }
 
   async deleteUser(userId: string): Promise<boolean> {
-    const supabase = await createClient()
+    const supabase = await getSupabaseClient()
     
     try {
       // Delete user from auth (this will cascade to users table due to foreign key)

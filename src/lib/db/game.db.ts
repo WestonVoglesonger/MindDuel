@@ -1,24 +1,54 @@
-import { createClient } from '@/lib/supabase/server'
+import { getSupabaseClient } from '@/lib/supabase/universal-client'
 import { GameSession, GameQuestion, BuzzerEvent, BuzzerEventInsert } from '@/types/game.types'
+
+type CreateGameSessionOptions = {
+  status?: GameSession['status']
+  boardState?: Record<string, unknown>
+  isBotMatch?: boolean
+}
 
 /**
  * Create a new game session
  */
-export async function createGameSession(player1Id: string, player2Id: string): Promise<GameSession | null> {
-  const supabase = await createClient()
-  
+export async function createGameSession(
+  player1Id: string,
+  player2Id: string,
+  options: CreateGameSessionOptions = {}
+): Promise<GameSession | null> {
+  const supabase = await getSupabaseClient()
+
+  const baseBoardState: Record<string, unknown> = {
+    selectedQuestions: [],
+    answeredQuestions: [],
+    currentPlayerTurn: player1Id,
+  }
+
+  const providedBoardState = options.boardState ?? {}
+  const mergedBoardState = {
+    ...baseBoardState,
+    ...providedBoardState,
+  }
+
+  const metaKey = 'meta'
+  const existingMeta =
+    typeof (mergedBoardState as Record<string, unknown>)[metaKey] === 'object' &&
+    (mergedBoardState as Record<string, unknown>)[metaKey] !== null
+      ? ((mergedBoardState as Record<string, unknown>)[metaKey] as Record<string, unknown>)
+      : {}
+
+  ;(mergedBoardState as Record<string, unknown>)[metaKey] = {
+    ...existingMeta,
+    isBotMatch: options.isBotMatch ?? false,
+  }
+
   const { data, error } = await supabase
     .from('game_sessions')
     .insert({
       player1_id: player1Id,
       player2_id: player2Id,
-      status: 'waiting_for_players',
+      status: options.status ?? 'waiting',
       current_turn_player_id: player1Id, // Player 1 goes first
-      board_state: {
-        selectedQuestions: [],
-        answeredQuestions: [],
-        currentPlayerTurn: player1Id
-      }
+      board_state: mergedBoardState
     })
     .select()
     .single()
@@ -35,7 +65,7 @@ export async function createGameSession(player1Id: string, player2Id: string): P
  * Get game session by ID
  */
 export async function getGameSession(gameSessionId: string): Promise<GameSession | null> {
-  const supabase = await createClient()
+  const supabase = await getSupabaseClient()
   
   const { data, error } = await supabase
     .from('game_sessions')
@@ -55,7 +85,7 @@ export async function getGameSession(gameSessionId: string): Promise<GameSession
  * Update game session
  */
 export async function updateGameSession(gameSessionId: string, updates: Partial<GameSession>): Promise<GameSession | null> {
-  const supabase = await createClient()
+  const supabase = await getSupabaseClient()
   
   const { data, error } = await supabase
     .from('game_sessions')
@@ -76,7 +106,7 @@ export async function updateGameSession(gameSessionId: string, updates: Partial<
  * Select questions for a game (25 questions for 5x5 board)
  */
 export async function selectQuestionsForGame(gameSessionId: string): Promise<GameQuestion[]> {
-  const supabase = await createClient()
+  const supabase = await getSupabaseClient()
   
   // First, get 25 random questions
   const { data: questions, error: questionsError } = await supabase
@@ -157,7 +187,7 @@ export async function submitAnswer(
  * Update player score
  */
 export async function updateScore(gameSessionId: string, playerId: string, scoreDelta: number): Promise<GameSession | null> {
-  const supabase = await createClient()
+  const supabase = await getSupabaseClient()
   
   // Get current game session
   const gameSession = await getGameSession(gameSessionId)
@@ -182,7 +212,7 @@ export async function updateScore(gameSessionId: string, playerId: string, score
  * Complete a game
  */
 export async function completeGame(gameSessionId: string, winnerId: string | null): Promise<GameSession | null> {
-  const supabase = await createClient()
+  const supabase = await getSupabaseClient()
   
   const { data, error } = await supabase
     .from('game_sessions')
@@ -207,13 +237,13 @@ export async function completeGame(gameSessionId: string, winnerId: string | nul
  * Get active game for a user
  */
 export async function getActiveGameForUser(userId: string): Promise<GameSession | null> {
-  const supabase = await createClient()
+  const supabase = await getSupabaseClient()
   
   const { data, error } = await supabase
     .from('game_sessions')
     .select('*')
     .or(`player1_id.eq.${userId},player2_id.eq.${userId}`)
-    .in('status', ['waiting_for_players', 'in_progress'])
+    .in('status', ['waiting', 'in_progress'])
     .order('created_at', { ascending: false })
     .limit(1)
     .single()
@@ -234,7 +264,7 @@ export async function getActiveGameForUser(userId: string): Promise<GameSession 
  * Abandon a game
  */
 export async function abandonGame(gameSessionId: string): Promise<GameSession | null> {
-  const supabase = await createClient()
+  const supabase = await getSupabaseClient()
   
   const { data, error } = await supabase
     .from('game_sessions')

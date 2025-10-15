@@ -1,4 +1,3 @@
-import { updateSession } from '@/lib/supabase/middleware'
 import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
 
@@ -10,24 +9,28 @@ export async function middleware(request: NextRequest) {
     return NextResponse.next()
   }
 
-  // Update the Supabase session
-  const response = await updateSession(request)
+  // Allow test matches without authentication
+  if (pathname.startsWith('/game/test-')) {
+    return NextResponse.next()
+  }
 
   // Redirect unauthenticated users from protected routes
   const protectedRoutes = ['/lobby', '/game', '/profile', '/leaderboard']
   
   if (protectedRoutes.some(route => pathname.startsWith(route))) {
-    // Check if user is authenticated by looking at the session cookie
-    const sessionCookie = request.cookies.get('sb-access-token')
+    // Check for Supabase session cookies
+    const hasAccessToken = request.cookies.has('sb-access-token') || 
+                         request.cookies.has('sb-refresh-token') ||
+                         request.cookies.has('supabase-auth-token')
     
-    if (!sessionCookie) {
+    if (!hasAccessToken) {
       const url = request.nextUrl.clone()
       url.pathname = '/login'
       return NextResponse.redirect(url)
     }
   }
 
-  return response
+  return NextResponse.next()
 }
 
 export const config = {

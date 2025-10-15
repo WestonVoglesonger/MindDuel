@@ -1,23 +1,23 @@
-import { createClient } from '@/lib/supabase/server'
+import { getSupabaseClient } from '@/lib/supabase/universal-client'
 import { MatchmakingQueue } from '@/types/game.types'
 
 /**
  * Join the matchmaking queue
  */
 export async function joinMatchmakingQueue(userId: string, eloRating: number): Promise<MatchmakingQueue | null> {
-  const supabase = await createClient()
+  const supabase = await getSupabaseClient()
   
   // First, remove user from queue if they're already in it
   await supabase
     .from('matchmaking_queue')
     .delete()
-    .eq('player_id', userId)
+    .eq('user_id', userId)
 
   // Add user to queue
   const { data, error } = await supabase
     .from('matchmaking_queue')
     .insert({
-      player_id: userId,
+      user_id: userId,
       elo_rating: eloRating,
       status: 'waiting'
     })
@@ -36,12 +36,12 @@ export async function joinMatchmakingQueue(userId: string, eloRating: number): P
  * Remove user from matchmaking queue
  */
 export async function removeFromMatchmakingQueue(userId: string): Promise<boolean> {
-  const supabase = await createClient()
+  const supabase = await getSupabaseClient()
   
   const { error } = await supabase
     .from('matchmaking_queue')
     .delete()
-    .eq('player_id', userId)
+    .eq('user_id', userId)
 
   if (error) {
     console.error('Error removing from matchmaking queue:', error)
@@ -55,37 +55,37 @@ export async function removeFromMatchmakingQueue(userId: string): Promise<boolea
  * Find an opponent for matchmaking
  */
 export async function findMatchmakingOpponent(userId: string, eloRange: number = 100): Promise<string | null> {
-  const supabase = await createClient()
+  const supabase = await getSupabaseClient()
 
   // Simple implementation: find any waiting player that's not ourselves
   const { data, error } = await supabase
     .from('matchmaking_queue')
-    .select('player_id')
+    .select('user_id')
     .eq('status', 'waiting')
-    .neq('player_id', userId)
+    .neq('user_id', userId)
     .limit(1)
-    .single()
+    .maybeSingle()
 
   if (error || !data) {
     console.log('No opponent found or error:', error?.message)
     return null
   }
 
-  return data.player_id
+  return data.user_id
 }
 
 /**
  * Get matchmaking queue status
  */
 export async function getMatchmakingQueueStatus(userId: string): Promise<MatchmakingQueue | null> {
-  const supabase = await createClient()
+  const supabase = await getSupabaseClient()
   
   const { data, error } = await supabase
     .from('matchmaking_queue')
     .select('*')
-    .eq('player_id', userId)
+    .eq('user_id', userId)
     .eq('status', 'waiting')
-    .single()
+    .maybeSingle()
 
   if (error) {
     if (error.code === 'PGRST116') {
@@ -103,7 +103,7 @@ export async function getMatchmakingQueueStatus(userId: string): Promise<Matchma
  * Get all users in matchmaking queue
  */
 export async function getMatchmakingQueue(): Promise<MatchmakingQueue[]> {
-  const supabase = await createClient()
+  const supabase = await getSupabaseClient()
   
   const { data, error } = await supabase
     .from('matchmaking_queue')
@@ -123,12 +123,12 @@ export async function getMatchmakingQueue(): Promise<MatchmakingQueue[]> {
  * Mark users as matched in queue
  */
 export async function markUsersAsMatched(user1Id: string, user2Id: string): Promise<boolean> {
-  const supabase = await createClient()
+  const supabase = await getSupabaseClient()
   
   const { error } = await supabase
     .from('matchmaking_queue')
     .update({ status: 'matched' })
-    .in('player_id', [user1Id, user2Id])
+    .in('user_id', [user1Id, user2Id])
 
   if (error) {
     console.error('Error marking users as matched:', error)
@@ -142,7 +142,7 @@ export async function markUsersAsMatched(user1Id: string, user2Id: string): Prom
  * Clean up abandoned matchmaking entries
  */
 export async function cleanupMatchmakingQueue(): Promise<number> {
-  const supabase = await createClient()
+  const supabase = await getSupabaseClient()
 
   // First count the records to be deleted
   const { count: countBefore } = await supabase
@@ -170,7 +170,7 @@ export async function cleanupMatchmakingQueue(): Promise<number> {
  * Get estimated wait time for matchmaking
  */
 export async function getEstimatedWaitTime(userElo: number): Promise<number> {
-  const supabase = await createClient()
+  const supabase = await getSupabaseClient()
 
   // Count total waiting users (simplified since elo_rating field may not exist)
   const { count, error } = await supabase
@@ -195,14 +195,14 @@ export async function getEstimatedWaitTime(userElo: number): Promise<number> {
  * Check if user is already in matchmaking queue
  */
 export async function isUserInMatchmakingQueue(userId: string): Promise<boolean> {
-  const supabase = await createClient()
+  const supabase = await getSupabaseClient()
   
   const { data, error } = await supabase
     .from('matchmaking_queue')
     .select('id')
-    .eq('player_id', userId)
+    .eq('user_id', userId)
     .eq('status', 'waiting')
-    .single()
+    .maybeSingle()
 
   if (error) {
     if (error.code === 'PGRST116') {
@@ -223,7 +223,7 @@ export async function getMatchmakingStats(): Promise<{
   averageElo: number
   averageWaitTime: number
 }> {
-  const supabase = await createClient()
+  const supabase = await getSupabaseClient()
   
   const { count, error } = await supabase
     .from('matchmaking_queue')
