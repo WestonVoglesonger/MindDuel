@@ -1,15 +1,7 @@
 import { createServerClient } from '@supabase/ssr'
 import { Database } from '@/types/supabase.types'
 
-interface CookieOptions {
-  maxAge?: number
-  expires?: Date
-  httpOnly?: boolean
-  secure?: boolean
-  sameSite?: 'strict' | 'lax' | 'none'
-  path?: string
-  domain?: string
-}
+// CookieOptions interface removed as it's not used
 
 export const createClient = async () => {
   // Dynamic import to avoid issues with next/headers in non-server contexts
@@ -29,7 +21,7 @@ export const createClient = async () => {
             cookies.forEach(({ name, value, options }) => {
               cookieStore.set(name, value, options)
             })
-          } catch (error) {
+          } catch {
             // The `setAll` method was called from a Server Component.
             // This can be ignored if you have middleware refreshing
             // user sessions.

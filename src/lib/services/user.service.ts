@@ -83,7 +83,7 @@ export class UserService implements UserServiceInterface {
       const fileName = `${userId}-${Date.now()}.${fileExt}`
       
       // Upload file to Supabase Storage
-      const { data, error } = await supabase.storage
+      const { error } = await supabase.storage
         .from('avatars')
         .upload(fileName, file)
 

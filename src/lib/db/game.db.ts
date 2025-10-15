@@ -103,7 +103,7 @@ export async function selectQuestionsForGame(gameSessionId: string): Promise<Gam
 /**
  * Get questions for a game session
  */
-export async function getGameQuestions(gameSessionId: string): Promise<GameQuestion[]> {
+export async function getGameQuestions(_gameSessionId: string): Promise<GameQuestion[]> {
   // TODO: Implement game_questions table or use board_state approach
   // For now, return empty array since game_questions table doesn't exist
   return []

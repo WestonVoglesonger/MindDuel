@@ -4,7 +4,15 @@ import { useEffect, useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 
 export default function DeployedDebugPage() {
-  const [debugInfo, setDebugInfo] = useState<any>(null)
+  const [debugInfo, setDebugInfo] = useState<{
+    user: any;
+    userError: any;
+    session: any;
+    sessionError: any;
+    dbTest: any;
+    envInfo: any;
+    timestamp: string;
+  } | null>(null)
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
@@ -40,9 +48,9 @@ export default function DeployedDebugPage() {
             if (process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
               return JSON.parse(atob(process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY.split('.')[1]))
             }
-          } catch (e) {
-            return { error: 'Could not decode JWT' }
-          }
+        } catch {
+          return { error: 'Could not decode JWT' }
+        }
           return null
         })()
       }
@@ -143,8 +151,8 @@ export default function DeployedDebugPage() {
             <strong>Next Steps:</strong>
             <ol className="mt-2 list-decimal list-inside space-y-1">
               <li>Check the JWT payload above - it shows which Supabase project this is connecting to</li>
-              <li>Look at the "ref" field in the JWT - this should match your current project ID</li>
-              <li>If it's wrong, your Vercel environment variables need to be updated</li>
+              <li>Look at the &quot;ref&quot; field in the JWT - this should match your current project ID</li>
+              <li>If it&apos;s wrong, your Vercel environment variables need to be updated</li>
               <li>Go to Vercel Dashboard → Your Project → Settings → Environment Variables</li>
               <li>Update NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY</li>
               <li>Redeploy your app</li>

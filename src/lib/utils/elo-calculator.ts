@@ -50,7 +50,7 @@ export function calculateEloChanges(
   ratingB: number,
   winnerId: string | null,
   playerAId: string,
-  playerBId: string
+  _playerBId: string
 ): { player1Change: number; player2Change: number } {
   let scoreA: number
   let scoreB: number
