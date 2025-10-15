@@ -24,14 +24,16 @@ export default function LoginPage() {
     setError('')
 
     try {
-      const { error } = await supabase.auth.signInWithPassword({
+      const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password,
       })
 
       if (error) {
         setError(error.message)
-      } else {
+      } else if (data.user) {
+        // Wait a moment for the session to be established
+        await new Promise(resolve => setTimeout(resolve, 100))
         router.push('/lobby')
         router.refresh()
       }
