@@ -15,6 +15,7 @@ export async function createGameSession(
   player2Id: string,
   options: CreateGameSessionOptions = {}
 ): Promise<GameSession | null> {
+  console.log('🎮 createGameSession called:', { player1Id, player2Id, options })
   const supabase = createClient()
 
   const baseBoardState: Record<string, unknown> = {
@@ -41,23 +42,30 @@ export async function createGameSession(
     isBotMatch: options.isBotMatch ?? false,
   }
 
+  const insertData = {
+    player1_id: player1Id,
+    player2_id: player2Id,
+    status: options.status ?? 'waiting',
+    current_turn_player_id: player1Id, // Player 1 goes first
+    board_state: mergedBoardState
+  }
+
+  console.log('🎮 Inserting game session with data:', insertData)
+
   const { data, error } = await supabase
     .from('game_sessions')
-    .insert({
-      player1_id: player1Id,
-      player2_id: player2Id,
-      status: options.status ?? 'waiting',
-      current_turn_player_id: player1Id, // Player 1 goes first
-      board_state: mergedBoardState
-    })
+    .insert(insertData)
     .select()
     .single()
 
+  console.log('🎮 Game session insert result:', { data, error })
+
   if (error) {
-    console.error('Error creating game session:', error)
+    console.error('❌ Error creating game session:', error)
     return null
   }
 
+  console.log('✅ Game session created successfully:', data)
   return data
 }
 
@@ -65,6 +73,7 @@ export async function createGameSession(
  * Get game session by ID
  */
 export async function getGameSession(gameSessionId: string): Promise<GameSession | null> {
+  console.log('🔍 getGameSession called with ID:', gameSessionId)
   const supabase = createClient()
   
   const { data, error } = await supabase
@@ -73,11 +82,14 @@ export async function getGameSession(gameSessionId: string): Promise<GameSession
     .eq('id', gameSessionId)
     .single()
 
+  console.log('🔍 getGameSession result:', { data, error })
+
   if (error) {
-    console.error('Error fetching game session:', error)
+    console.error('❌ Error fetching game session:', error)
     return null
   }
 
+  console.log('✅ Game session found:', data)
   return data
 }
 
