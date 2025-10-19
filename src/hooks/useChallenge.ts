@@ -4,9 +4,7 @@ import { useState, useCallback } from 'react'
 import { ChallengeService } from '@/lib/services/challenge.service'
 import { 
   ChallengeWithUsers, 
-  CreateChallengeRequest, 
-  ChallengeResponse,
-  ChallengeListResponse 
+  CreateChallengeRequest
 } from '@/types/challenge.types'
 
 interface UseChallengeOptions {
