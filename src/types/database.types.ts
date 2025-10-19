@@ -27,6 +27,57 @@ export type Database = {
         }
         Relationships: []
       }
+      challenges: {
+        Row: {
+          id: string
+          challenger_id: string
+          challenged_id: string
+          status: Database['public']['Enums']['challenge_status']
+          message: string | null
+          expires_at: string
+          created_at: string
+          updated_at: string
+          responded_at: string | null
+        }
+        Insert: {
+          id?: string
+          challenger_id: string
+          challenged_id: string
+          status?: Database['public']['Enums']['challenge_status']
+          message?: string | null
+          expires_at?: string
+          created_at?: string
+          updated_at?: string
+          responded_at?: string | null
+        }
+        Update: {
+          id?: string
+          challenger_id?: string
+          challenged_id?: string
+          status?: Database['public']['Enums']['challenge_status']
+          message?: string | null
+          expires_at?: string
+          created_at?: string
+          updated_at?: string
+          responded_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: 'challenges_challenger_id_fkey'
+            columns: ['challenger_id']
+            isOneToOne: false
+            referencedRelation: 'users'
+            referencedColumns: ['id']
+          },
+          {
+            foreignKeyName: 'challenges_challenged_id_fkey'
+            columns: ['challenged_id']
+            isOneToOne: false
+            referencedRelation: 'users'
+            referencedColumns: ['id']
+          },
+        ]
+      }
       game_sessions: {
         Row: {
           current_question_id: string | null
@@ -230,6 +281,7 @@ export type Database = {
       [_ in never]: never
     }
     Enums: {
+      challenge_status: 'pending' | 'accepted' | 'declined' | 'expired' | 'cancelled'
       game_status: 'waiting' | 'in_progress' | 'completed' | 'cancelled'
       queue_status: 'waiting' | 'matched' | 'cancelled'
     }

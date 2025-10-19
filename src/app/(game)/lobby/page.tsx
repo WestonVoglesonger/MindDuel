@@ -5,23 +5,41 @@ import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { MatchmakingQueue } from '@/components/lobby/MatchmakingQueue'
 import { PlayerCard } from '@/components/lobby/PlayerCard'
+import { SendChallengeDialog } from '@/components/lobby/SendChallengeDialog'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { UserService } from '@/lib/services/user.service'
+import { useChallenge } from '@/hooks/useChallenge'
 import { Player as User } from '@/types/game.types'
-import { Search, Users, Trophy, Settings, LogOut } from 'lucide-react'
+import { Search, Users, Trophy, LogOut } from 'lucide-react'
 
 export default function LobbyPage() {
   const [user, setUser] = useState<User | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [onlinePlayers, setOnlinePlayers] = useState<User[]>([])
+  const [showChallengeDialog, setShowChallengeDialog] = useState(false)
+  const [selectedPlayer, setSelectedPlayer] = useState<User | null>(null)
   
   const router = useRouter()
   const supabase = createClient()
   const userService = new UserService()
+
+  const {
+    sendChallenge,
+    loading: challengeLoading,
+    error: challengeError
+  } = useChallenge({
+    userId: user?.id || '',
+    onChallengeAccepted: (gameSessionId) => {
+      router.push(`/game/${gameSessionId}`)
+    },
+    onError: (error) => {
+      setError(error)
+    }
+  })
 
   useEffect(() => {
     async function loadUser() {
@@ -74,9 +92,16 @@ export default function LobbyPage() {
     setError(error.message)
   }
 
-  const handleLogout = async () => {
-    await supabase.auth.signOut()
-    router.push('/')
+  const handleChallenge = (playerId: string) => {
+    const player = onlinePlayers.find(p => p.id === playerId)
+    if (player) {
+      setSelectedPlayer(player)
+      setShowChallengeDialog(true)
+    }
+  }
+
+  const handleSendChallenge = async (playerId: string, message?: string) => {
+    return await sendChallenge(playerId, message)
   }
 
   if (loading) {
@@ -181,10 +206,7 @@ export default function LobbyPage() {
                       player={player}
                       isCurrentPlayer={player.id === user.id}
                       showChallengeButton={player.id !== user.id}
-                      onChallenge={(playerId) => {
-                        // TODO: Implement direct challenge
-                        console.log('Challenge player:', playerId)
-                      }}
+                      onChallenge={handleChallenge}
                     />
                   ))}
                 </div>
@@ -249,6 +271,18 @@ export default function LobbyPage() {
           </TabsContent>
         </Tabs>
       </div>
+
+      {/* Send Challenge Dialog */}
+      {selectedPlayer && (
+        <SendChallengeDialog
+          open={showChallengeDialog}
+          onOpenChange={setShowChallengeDialog}
+          player={selectedPlayer}
+          onSendChallenge={handleSendChallenge}
+          loading={challengeLoading}
+          error={challengeError}
+        />
+      )}
     </div>
   )
 }
