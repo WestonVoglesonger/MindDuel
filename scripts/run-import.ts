@@ -1,12 +1,12 @@
 #!/usr/bin/env tsx
 
-import { importJArchiveQuestions } from './import-jarchive-questions'
+import { importCSVQuestions } from './import-csv-questions'
 
 async function main() {
-  console.log('🚀 Starting MindDuel question import...')
-  
-  const result = await importJArchiveQuestions()
-  
+  console.log('🚀 Starting MindDuel CSV question import...')
+
+  const result = await importCSVQuestions()
+
   if (result.success) {
     console.log('✅ Import completed successfully!')
     console.log(`📊 Statistics:`)
