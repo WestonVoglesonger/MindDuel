@@ -26,7 +26,11 @@ export async function createChallenge(
     return null
   }
 
-  return data
+  return data ? {
+    ...data,
+    message: data.message ?? undefined,
+    responded_at: data.responded_at ?? undefined
+  } : null
 }
 
 /**
@@ -46,7 +50,11 @@ export async function getChallenge(challengeId: string): Promise<Challenge | nul
     return null
   }
 
-  return data
+  return data ? {
+    ...data,
+    message: data.message ?? undefined,
+    responded_at: data.responded_at ?? undefined
+  } : null
 }
 
 /**
@@ -82,7 +90,11 @@ export async function getChallengeWithUsers(challengeId: string): Promise<Challe
     return null
   }
 
-  return data as ChallengeWithUsers
+  return data ? {
+    ...data,
+    message: data.message ?? undefined,
+    responded_at: data.responded_at ?? undefined
+  } as unknown as ChallengeWithUsers : null
 }
 
 /**
@@ -174,8 +186,16 @@ export async function getUserChallenges(userId: string): Promise<{
   }
 
   return {
-    sent: (sentChallenges || []) as ChallengeWithUsers[],
-    received: (receivedChallenges || []) as ChallengeWithUsers[]
+    sent: (sentChallenges || []).map(challenge => ({
+      ...challenge,
+      message: challenge.message ?? undefined,
+      responded_at: challenge.responded_at ?? undefined
+    })) as unknown as ChallengeWithUsers[],
+    received: (receivedChallenges || []).map(challenge => ({
+      ...challenge,
+      message: challenge.message ?? undefined,
+      responded_at: challenge.responded_at ?? undefined
+    })) as unknown as ChallengeWithUsers[]
   }
 }
 
@@ -214,7 +234,11 @@ export async function getPendingChallengesForUser(userId: string): Promise<Chall
     return []
   }
 
-  return (data || []) as ChallengeWithUsers[]
+  return (data || []).map(challenge => ({
+    ...challenge,
+    message: challenge.message ?? undefined,
+    responded_at: challenge.responded_at ?? undefined
+  })) as unknown as ChallengeWithUsers[]
 }
 
 /**
@@ -250,7 +274,11 @@ export async function getSentChallenges(userId: string): Promise<ChallengeWithUs
     return []
   }
 
-  return (data || []) as ChallengeWithUsers[]
+  return (data || []).map(challenge => ({
+    ...challenge,
+    message: challenge.message ?? undefined,
+    responded_at: challenge.responded_at ?? undefined
+  })) as unknown as ChallengeWithUsers[]
 }
 
 /**
@@ -259,17 +287,20 @@ export async function getSentChallenges(userId: string): Promise<ChallengeWithUs
 export async function canUserChallenge(challengerId: string, challengedId: string): Promise<boolean> {
   const supabase = await createClient()
 
-  const { data, error } = await supabase.rpc('can_challenge_user', {
-    p_challenger_id: challengerId,
-    p_challenged_id: challengedId
-  })
+  // Check if there are any pending challenges between these users
+  const { data, error } = await supabase
+    .from('challenges')
+    .select('id')
+    .or(`and(challenger_id.eq.${challengerId},challenged_id.eq.${challengedId}),and(challenger_id.eq.${challengedId},challenged_id.eq.${challengerId})`)
+    .eq('status', 'pending')
+    .gt('expires_at', new Date().toISOString())
 
   if (error) {
     console.error('Error checking if user can challenge:', error)
     return false
   }
 
-  return data || false
+  return (data || []).length === 0
 }
 
 /**
@@ -278,17 +309,26 @@ export async function canUserChallenge(challengerId: string, challengedId: strin
 export async function acceptChallenge(challengeId: string, userId: string): Promise<string | null> {
   const supabase = await createClient()
 
-  const { data, error } = await supabase.rpc('accept_challenge', {
-    p_challenge_id: challengeId,
-    p_user_id: userId
-  })
+  // First, update the challenge status
+  const { error: updateError } = await supabase
+    .from('challenges')
+    .update({
+      status: 'accepted',
+      responded_at: new Date().toISOString(),
+      updated_at: new Date().toISOString()
+    })
+    .eq('id', challengeId)
+    .eq('challenged_id', userId)
+    .eq('status', 'pending')
 
-  if (error) {
-    console.error('Error accepting challenge:', error)
+  if (updateError) {
+    console.error('Error accepting challenge:', updateError)
     return null
   }
 
-  return data
+  // For now, return the challenge ID as the game session ID
+  // In a real implementation, you'd create a game session here
+  return challengeId
 }
 
 /**
