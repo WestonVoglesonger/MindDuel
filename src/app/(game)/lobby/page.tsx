@@ -104,6 +104,11 @@ export default function LobbyPage() {
     return await sendChallenge(playerId, message)
   }
 
+  const handleLogout = async () => {
+    await supabase.auth.signOut()
+    router.push('/')
+  }
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
