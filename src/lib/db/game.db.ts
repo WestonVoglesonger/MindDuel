@@ -1,4 +1,4 @@
-import { getSupabaseClient } from '@/lib/supabase/universal-client'
+import { createClient } from '@/lib/supabase/client'
 import { GameSession, GameQuestion, BuzzerEvent, BuzzerEventInsert } from '@/types/game.types'
 
 type CreateGameSessionOptions = {
@@ -15,7 +15,7 @@ export async function createGameSession(
   player2Id: string,
   options: CreateGameSessionOptions = {}
 ): Promise<GameSession | null> {
-  const supabase = await getSupabaseClient()
+  const supabase = createClient()
 
   const baseBoardState: Record<string, unknown> = {
     selectedQuestions: [],
@@ -65,7 +65,7 @@ export async function createGameSession(
  * Get game session by ID
  */
 export async function getGameSession(gameSessionId: string): Promise<GameSession | null> {
-  const supabase = await getSupabaseClient()
+  const supabase = createClient()
   
   const { data, error } = await supabase
     .from('game_sessions')
@@ -85,7 +85,7 @@ export async function getGameSession(gameSessionId: string): Promise<GameSession
  * Update game session
  */
 export async function updateGameSession(gameSessionId: string, updates: Partial<GameSession>): Promise<GameSession | null> {
-  const supabase = await getSupabaseClient()
+  const supabase = createClient()
   
   const { data, error } = await supabase
     .from('game_sessions')
@@ -106,7 +106,7 @@ export async function updateGameSession(gameSessionId: string, updates: Partial<
  * Select questions for a game (25 questions for 5x5 board)
  */
 export async function selectQuestionsForGame(gameSessionId: string): Promise<GameQuestion[]> {
-  const supabase = await getSupabaseClient()
+  const supabase = createClient()
   
   // First, get 25 random questions
   const { data: questions, error: questionsError } = await supabase
@@ -187,7 +187,7 @@ export async function submitAnswer(
  * Update player score
  */
 export async function updateScore(gameSessionId: string, playerId: string, scoreDelta: number): Promise<GameSession | null> {
-  const supabase = await getSupabaseClient()
+  const supabase = createClient()
   
   // Get current game session
   const gameSession = await getGameSession(gameSessionId)
@@ -212,7 +212,7 @@ export async function updateScore(gameSessionId: string, playerId: string, score
  * Complete a game
  */
 export async function completeGame(gameSessionId: string, winnerId: string | null): Promise<GameSession | null> {
-  const supabase = await getSupabaseClient()
+  const supabase = createClient()
   
   const { data, error } = await supabase
     .from('game_sessions')
@@ -237,7 +237,7 @@ export async function completeGame(gameSessionId: string, winnerId: string | nul
  * Get active game for a user
  */
 export async function getActiveGameForUser(userId: string): Promise<GameSession | null> {
-  const supabase = await getSupabaseClient()
+  const supabase = createClient()
   
   const { data, error } = await supabase
     .from('game_sessions')
@@ -264,7 +264,7 @@ export async function getActiveGameForUser(userId: string): Promise<GameSession 
  * Abandon a game
  */
 export async function abandonGame(gameSessionId: string): Promise<GameSession | null> {
-  const supabase = await getSupabaseClient()
+  const supabase = createClient()
   
   const { data, error } = await supabase
     .from('game_sessions')
