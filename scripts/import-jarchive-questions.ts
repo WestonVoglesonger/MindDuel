@@ -1,5 +1,10 @@
-import { createClient } from '@/lib/supabase/server'
+import { createClient } from '@supabase/supabase-js'
 import { generateAnswerVariants } from '@/lib/utils/answer-matcher'
+import { config } from 'dotenv'
+import { resolve } from 'path'
+
+// Load environment variables from .env.local
+config({ path: resolve(process.cwd(), '.env.local') })
 
 // Sample J-Archive data structure
 interface JArchiveQuestion {
@@ -118,37 +123,64 @@ const sampleQuestions: JArchiveQuestion[] = [
 ]
 
 export async function importJArchiveQuestions() {
-  const supabase = await createClient()
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
+  // Use service key for imports (bypasses RLS) or anon key if service key not available
+  const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+
+  if (!supabaseUrl || !supabaseKey) {
+    throw new Error('Missing Supabase environment variables. Please check NEXT_PUBLIC_SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY')
+  }
+
+  const supabase = createClient(supabaseUrl, supabaseKey, {
+    auth: {
+      autoRefreshToken: false,
+      persistSession: false
+    }
+  })
   
   console.log('Starting J-Archive question import...')
   
   try {
-    // First, create categories
+    // First, create or get categories
     const categoryMap = new Map<string, string>()
-    
+
     for (const question of sampleQuestions) {
       if (!categoryMap.has(question.category)) {
-        const { data: category, error } = await supabase
+        // First try to find existing category
+        const { data: existingCategory } = await supabase
           .from('categories')
-          .insert({
-            name: question.category,
-            description: `Questions about ${question.category.toLowerCase()}`
-          })
-          .select()
+          .select('id')
+          .eq('name', question.category)
           .single()
-        
-        if (error) {
-          console.error(`Error creating category ${question.category}:`, error)
-          continue
-        }
-        
-        if (category) {
-          categoryMap.set(question.category, category.id)
+
+        if (existingCategory) {
+          categoryMap.set(question.category, existingCategory.id)
+          console.log(`Found existing category: ${question.category}`)
+        } else {
+          // Create new category if it doesn't exist
+          const { data: newCategory, error } = await supabase
+            .from('categories')
+            .insert({
+              name: question.category,
+              description: `Questions about ${question.category.toLowerCase()}`
+            })
+            .select()
+            .single()
+
+          if (error) {
+            console.error(`Error creating category ${question.category}:`, error)
+            continue
+          }
+
+          if (newCategory) {
+            categoryMap.set(question.category, newCategory.id)
+            console.log(`Created new category: ${question.category}`)
+          }
         }
       }
     }
-    
-    console.log(`Created ${categoryMap.size} categories`)
+
+    console.log(`Mapped ${categoryMap.size} categories`)
     
     // Now import questions
     let importedCount = 0
