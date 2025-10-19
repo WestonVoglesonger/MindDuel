@@ -1,13 +1,10 @@
 import { 
-  Challenge, 
   ChallengeWithUsers, 
   CreateChallengeRequest, 
   ChallengeResponse,
   ChallengeListResponse 
 } from '@/types/challenge.types'
 import * as challengeDb from '@/lib/db/challenge.db'
-import * as gameDb from '@/lib/db/game.db'
-import * as matchmakingDb from '@/lib/db/matchmaking.db'
 
 export class ChallengeService {
   /**
