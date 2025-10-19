@@ -1,4 +1,4 @@
-import { createClient } from '@/lib/supabase/server'
+import { createClient } from '@/lib/supabase/client'
 import { Challenge, ChallengeWithUsers, CreateChallengeRequest } from '@/types/challenge.types'
 
 /**
@@ -9,7 +9,7 @@ export async function createChallenge(
   challengedId: string,
   message?: string
 ): Promise<Challenge | null> {
-  const supabase = await createClient()
+  const supabase = createClient()
 
   const { data, error } = await supabase
     .from('challenges')
@@ -37,7 +37,7 @@ export async function createChallenge(
  * Get challenge by ID
  */
 export async function getChallenge(challengeId: string): Promise<Challenge | null> {
-  const supabase = await createClient()
+  const supabase = createClient()
 
   const { data, error } = await supabase
     .from('challenges')
@@ -61,7 +61,7 @@ export async function getChallenge(challengeId: string): Promise<Challenge | nul
  * Get challenge with user details
  */
 export async function getChallengeWithUsers(challengeId: string): Promise<ChallengeWithUsers | null> {
-  const supabase = await createClient()
+  const supabase = createClient()
 
   const { data, error } = await supabase
     .from('challenges')
@@ -105,7 +105,7 @@ export async function updateChallengeStatus(
   status: 'accepted' | 'declined' | 'cancelled' | 'expired',
   userId: string
 ): Promise<boolean> {
-  const supabase = await createClient()
+  const supabase = createClient()
 
   const { error } = await supabase
     .from('challenges')
@@ -132,7 +132,7 @@ export async function getUserChallenges(userId: string): Promise<{
   sent: ChallengeWithUsers[]
   received: ChallengeWithUsers[]
 }> {
-  const supabase = await createClient()
+  const supabase = createClient()
 
   // Get sent challenges
   const { data: sentChallenges, error: sentError } = await supabase
@@ -203,7 +203,7 @@ export async function getUserChallenges(userId: string): Promise<{
  * Get pending challenges for a user
  */
 export async function getPendingChallengesForUser(userId: string): Promise<ChallengeWithUsers[]> {
-  const supabase = await createClient()
+  const supabase = createClient()
 
   const { data, error } = await supabase
     .from('challenges')
@@ -245,7 +245,7 @@ export async function getPendingChallengesForUser(userId: string): Promise<Chall
  * Get sent challenges for a user
  */
 export async function getSentChallenges(userId: string): Promise<ChallengeWithUsers[]> {
-  const supabase = await createClient()
+  const supabase = createClient()
 
   const { data, error } = await supabase
     .from('challenges')
@@ -285,7 +285,7 @@ export async function getSentChallenges(userId: string): Promise<ChallengeWithUs
  * Check if user can challenge another user
  */
 export async function canUserChallenge(challengerId: string, challengedId: string): Promise<boolean> {
-  const supabase = await createClient()
+  const supabase = createClient()
 
   // Check if there are any pending challenges between these users
   const { data, error } = await supabase
@@ -307,7 +307,7 @@ export async function canUserChallenge(challengerId: string, challengedId: strin
  * Accept a challenge and create game session
  */
 export async function acceptChallenge(challengeId: string, userId: string): Promise<string | null> {
-  const supabase = await createClient()
+  const supabase = createClient()
 
   // First, update the challenge status
   const { error: updateError } = await supabase
@@ -335,7 +335,7 @@ export async function acceptChallenge(challengeId: string, userId: string): Prom
  * Delete/cancel a challenge
  */
 export async function deleteChallenge(challengeId: string, userId: string): Promise<boolean> {
-  const supabase = await createClient()
+  const supabase = createClient()
 
   const { error } = await supabase
     .from('challenges')
@@ -356,7 +356,7 @@ export async function deleteChallenge(challengeId: string, userId: string): Prom
  * Get challenge count for user (for notifications)
  */
 export async function getChallengeCount(userId: string): Promise<number> {
-  const supabase = await createClient()
+  const supabase = createClient()
 
   const { count, error } = await supabase
     .from('challenges')
