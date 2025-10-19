@@ -35,10 +35,13 @@ export class GameService implements GameServiceInterface {
 
   async getGameSession(gameSessionId: string): Promise<GameSession | null> {
     try {
-      // TODO: Implement actual database query
-      return null
+      console.log('🎮 GameService.getGameSession called:', gameSessionId)
+      const { getGameSession } = await import('@/lib/db/game.db')
+      const session = await getGameSession(gameSessionId)
+      console.log('🎮 GameService.getGameSession result:', session)
+      return session
     } catch (error) {
-      console.error('Error getting game session:', error)
+      console.error('❌ Error getting game session:', error)
       return null
     }
   }
