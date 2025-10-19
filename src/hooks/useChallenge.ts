@@ -69,6 +69,7 @@ export function useChallenge({
    * Accept a challenge
    */
   const acceptChallenge = useCallback(async (challengeId: string): Promise<boolean> => {
+    console.log('🎯 useChallenge.acceptChallenge called:', { challengeId, userId })
     if (!userId) return false
 
     setLoading(true)
@@ -77,24 +78,31 @@ export function useChallenge({
     try {
       const response = await challengeService.acceptChallenge(challengeId, userId)
       
+      console.log('📨 Challenge service response:', response)
+      
       if (response.success) {
         // Refresh challenges list
         await refreshChallenges()
         
         // Navigate to game if game session was created
         if (response.game_session_id) {
+          console.log('🎮 Navigating to game session:', response.game_session_id)
           onChallengeAccepted?.(response.game_session_id)
+        } else {
+          console.warn('⚠️ No game session ID in successful response')
         }
         
         return true
       } else {
         const errorMessage = response.error || 'Failed to accept challenge'
+        console.error('❌ Challenge acceptance failed:', errorMessage)
         setError(errorMessage)
         onError?.(errorMessage)
         return false
       }
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'An unexpected error occurred'
+      console.error('❌ Exception in acceptChallenge:', err)
       setError(errorMessage)
       onError?.(errorMessage)
       return false

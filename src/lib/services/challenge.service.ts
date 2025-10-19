@@ -55,11 +55,15 @@ export class ChallengeService {
    * Accept a challenge
    */
   async acceptChallenge(challengeId: string, userId: string): Promise<ChallengeResponse> {
+    console.log('🚀 ChallengeService.acceptChallenge called:', { challengeId, userId })
     try {
       // Use the database function to accept challenge and create game session atomically
       const gameSessionId = await challengeDb.acceptChallenge(challengeId, userId)
       
+      console.log('🎮 Game session ID from DB:', gameSessionId)
+      
       if (!gameSessionId) {
+        console.error('❌ No game session ID returned from acceptChallenge')
         return {
           success: false,
           error: 'Failed to accept challenge. It may have expired or been cancelled.'
@@ -69,13 +73,15 @@ export class ChallengeService {
       // Get the updated challenge
       const challenge = await challengeDb.getChallenge(challengeId)
       
+      console.log('📋 Updated challenge:', challenge)
+      
       return {
         success: true,
         challenge: challenge || undefined,
         game_session_id: gameSessionId
       }
     } catch (error) {
-      console.error('Error accepting challenge:', error)
+      console.error('❌ Error accepting challenge:', error)
       return {
         success: false,
         error: 'An unexpected error occurred'

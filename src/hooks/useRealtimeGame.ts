@@ -49,15 +49,19 @@ export function useRealtimeGame({
   // Load initial game session
   useEffect(() => {
     async function loadGameSession() {
+      console.log('🎮 Loading game session:', gameSessionId)
       try {
         const session = await gameService.getGameSession(gameSessionId)
+        console.log('🎮 Game session loaded:', session)
         if (session) {
           setGameSession(session)
           onGameUpdate?.(session)
         } else {
+          console.error('❌ Game session not found for ID:', gameSessionId)
           setError('Game session not found')
         }
       } catch (err) {
+        console.error('❌ Error loading game session:', err)
         const errorMessage = err instanceof Error ? err.message : 'Failed to load game session'
         setError(errorMessage)
         onError?.(new Error(errorMessage))

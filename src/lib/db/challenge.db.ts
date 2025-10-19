@@ -307,6 +307,7 @@ export async function canUserChallenge(challengerId: string, challengedId: strin
  * Accept a challenge and create game session
  */
 export async function acceptChallenge(challengeId: string, userId: string): Promise<string | null> {
+  console.log('🔍 acceptChallenge called:', { challengeId, userId })
   const supabase = createClient()
 
   // First, get the challenge details
@@ -318,8 +319,10 @@ export async function acceptChallenge(challengeId: string, userId: string): Prom
     .eq('status', 'pending')
     .single()
 
+  console.log('📋 Challenge fetch result:', { challenge, fetchError })
+
   if (fetchError || !challenge) {
-    console.error('Error fetching challenge:', fetchError)
+    console.error('❌ Error fetching challenge:', fetchError)
     return null
   }
 
@@ -333,13 +336,16 @@ export async function acceptChallenge(challengeId: string, userId: string): Prom
     })
     .eq('id', challengeId)
 
+  console.log('✅ Challenge update result:', { updateError })
+
   if (updateError) {
-    console.error('Error accepting challenge:', updateError)
+    console.error('❌ Error accepting challenge:', updateError)
     return null
   }
 
   // Create a game session
   try {
+    console.log('🎮 Creating game session for:', { challenger_id: challenge.challenger_id, challenged_id: challenge.challenged_id })
     const { createGameSession } = await import('@/lib/db/game.db')
     const gameSession = await createGameSession(
       challenge.challenger_id,
@@ -347,14 +353,17 @@ export async function acceptChallenge(challengeId: string, userId: string): Prom
       { status: 'waiting' }
     )
 
+    console.log('🎮 Game session created:', { gameSession })
+
     if (!gameSession) {
-      console.error('Failed to create game session')
+      console.error('❌ Failed to create game session')
       return null
     }
 
+    console.log('✅ Returning game session ID:', gameSession.id)
     return gameSession.id
   } catch (error) {
-    console.error('Error creating game session:', error)
+    console.error('❌ Error creating game session:', error)
     return null
   }
 }
