@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { MatchmakingQueue } from '@/components/lobby/MatchmakingQueue'
@@ -24,8 +24,8 @@ export default function LobbyPage() {
   const [selectedPlayer, setSelectedPlayer] = useState<User | null>(null)
   
   const router = useRouter()
-  const supabase = createClient()
-  const userService = new UserService()
+  const supabase = useMemo(() => createClient(), [])
+  const userService = useMemo(() => new UserService(), [])
 
   const {
     sendChallenge,

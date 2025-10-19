@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState, useCallback } from 'react'
+import { useEffect, useState, useCallback, useMemo } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { GameSession, GameResult, Question } from '@/types/game.types'
 import { GameService } from '@/lib/services/game.service'
@@ -43,8 +43,8 @@ export function useRealtimeGame({
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   
-  const supabase = createClient()
-  const gameService = new GameService()
+  const supabase = useMemo(() => createClient(), [])
+  const gameService = useMemo(() => new GameService(), [])
 
   // Load initial game session
   useEffect(() => {
@@ -67,7 +67,7 @@ export function useRealtimeGame({
     }
 
     loadGameSession()
-  }, [gameSessionId, onGameUpdate, onError])
+  }, [gameSessionId, gameService])
 
   // Set up real-time subscriptions
   useEffect(() => {
@@ -178,7 +178,7 @@ export function useRealtimeGame({
       buzzerSubscription.unsubscribe()
       questionsSubscription.unsubscribe()
     }
-  }, [gameSessionId, onGameUpdate, onGameComplete, onError])
+  }, [gameSessionId, gameService])
 
   // Handle buzzer press
   const handleBuzzerPress = useCallback(async (questionId: string) => {

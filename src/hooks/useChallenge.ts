@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useMemo } from 'react'
 import { ChallengeService } from '@/lib/services/challenge.service'
 import { 
   ChallengeWithUsers, 
@@ -23,7 +23,7 @@ export function useChallenge({
   const [sentChallenges, setSentChallenges] = useState<ChallengeWithUsers[]>([])
   const [receivedChallenges, setReceivedChallenges] = useState<ChallengeWithUsers[]>([])
   
-  const challengeService = new ChallengeService()
+  const challengeService = useMemo(() => new ChallengeService(), [])
 
   /**
    * Send a challenge to another user
@@ -63,7 +63,7 @@ export function useChallenge({
     } finally {
       setLoading(false)
     }
-  }, [userId, challengeService, onError])
+  }, [userId, challengeService])
 
   /**
    * Accept a challenge
@@ -133,7 +133,7 @@ export function useChallenge({
     } finally {
       setLoading(false)
     }
-  }, [userId, challengeService, onError])
+  }, [userId, challengeService])
 
   /**
    * Cancel a challenge
@@ -165,7 +165,7 @@ export function useChallenge({
     } finally {
       setLoading(false)
     }
-  }, [userId, challengeService, onError])
+  }, [userId, challengeService])
 
   /**
    * Refresh challenges list

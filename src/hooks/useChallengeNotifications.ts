@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useMemo } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { ChallengeWithUsers, ChallengeNotification } from '@/types/challenge.types'
 import { ChallengeService } from '@/lib/services/challenge.service'
@@ -28,8 +28,8 @@ export function useChallengeNotifications({
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
-  const supabase = createClient()
-  const challengeService = new ChallengeService()
+  const supabase = useMemo(() => createClient(), [])
+  const challengeService = useMemo(() => new ChallengeService(), [])
 
   /**
    * Load initial pending challenges
@@ -49,7 +49,7 @@ export function useChallengeNotifications({
     } finally {
       setLoading(false)
     }
-  }, [userId, challengeService, onError])
+  }, [userId, challengeService])
 
   /**
    * Add a notification
@@ -226,17 +226,7 @@ export function useChallengeNotifications({
     return () => {
       challengesSubscription.unsubscribe()
     }
-  }, [
-    userId, 
-    supabase, 
-    challengeService, 
-    addNotification, 
-    onNewChallenge, 
-    onChallengeAccepted, 
-    onChallengeDeclined, 
-    onChallengeExpired, 
-    onError
-  ])
+  }, [userId, supabase, addNotification])
 
   return {
     // State
