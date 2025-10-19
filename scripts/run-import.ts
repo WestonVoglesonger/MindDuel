@@ -1,20 +1,23 @@
 #!/usr/bin/env tsx
 
-import { addManualQuestions } from './add-manual-questions'
+import { createGameQuestions } from './create-game-questions'
 
 async function main() {
-  console.log('🚀 Starting MindDuel manual question import...')
+  console.log('🎲 Creating game questions from question pool...')
 
-  const result = await addManualQuestions()
+  const result = await createGameQuestions()
 
   if (result.success) {
-    console.log('✅ Import completed successfully!')
+    console.log('✅ Game questions selection completed!')
     console.log(`📊 Statistics:`)
-    console.log(`   - Questions imported: ${result.importedCount}`)
-    console.log(`   - Categories created: ${result.categoryCount}`)
-    console.log(`   - Errors: ${result.errorCount}`)
+    console.log(`   - Questions available: ${result.totalQuestionsInPool}`)
+    console.log(`   - Questions selected: ${result.selectedQuestionsCount}`)
+    console.log(`   - Sample questions:`)
+    result.sampleQuestions.forEach((q: any) => {
+      console.log(`     • ${q.question_text.substring(0, 60)}... (${q.point_value} pts)`)
+    })
   } else {
-    console.error('❌ Import failed:', result.error)
+    console.error('❌ Game questions selection failed:', result.error)
     process.exit(1)
   }
 }
