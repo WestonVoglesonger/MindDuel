@@ -323,10 +323,10 @@ function RegularGamePage({ params }: { params: { gameId: string } }) {
             categories={categories}
             selectedQuestions={new Set()}
             answeredQuestions={new Set()}
-            currentPlayerTurn={gameSession.current_turn_player_id || ''}
+            currentPlayerTurn={gameSession?.current_turn_player_id || ''}
             currentPlayerId={user.id}
             onQuestionSelect={handleQuestionClick}
-            disabled={!isMyTurn}
+            disabled={gameSession?.status !== 'in_progress' || !gameSession}
           />
         </div>
 

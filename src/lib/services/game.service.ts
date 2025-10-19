@@ -3,6 +3,7 @@ import { GameSession, GameQuestion, BuzzerEvent, PlayerInGame, GameResult } from
 import { AnswerValidationService } from '@/lib/services/answer-validation.service'
 import { EloService } from '@/lib/services/elo.service'
 import { GAME_CONFIG } from '@/constants/game-config'
+import * as gameDb from '@/lib/db/game.db'
 
 export class GameService implements GameServiceInterface {
   async initializeGame(player1Id: string, player2Id: string): Promise<GameSession | null> {
@@ -140,10 +141,37 @@ export class GameService implements GameServiceInterface {
 
   async selectQuestion(gameSessionId: string, questionId: string, playerId: string): Promise<GameSession | null> {
     try {
-      // TODO: Implement actual question selection
-      return null
+      console.log('🎮 Selecting question:', { gameSessionId, questionId, playerId })
+
+      // Get current game session to validate it's the player's turn
+      const currentSession = await gameDb.getGameSession(gameSessionId)
+      if (!currentSession) {
+        console.error('❌ Game session not found')
+        return null
+      }
+
+      // Validate it's the player's turn
+      if (currentSession.current_turn_player_id !== playerId) {
+        console.error('❌ Not player turn:', { expected: currentSession.current_turn_player_id, actual: playerId })
+        return null
+      }
+
+      // Update game session with selected question
+      const updatedSession = await gameDb.updateGameSession(gameSessionId, {
+        current_question_id: questionId,
+        current_turn_player_id: null, // Clear turn until buzzer phase
+        updated_at: new Date().toISOString()
+      })
+
+      if (updatedSession) {
+        console.log('✅ Question selected successfully:', updatedSession)
+        return updatedSession
+      } else {
+        console.error('❌ Failed to update game session with selected question')
+        return null
+      }
     } catch (error) {
-      console.error('Error selecting question:', error)
+      console.error('❌ Error selecting question:', error)
       return null
     }
   }
