@@ -17,11 +17,11 @@ import { ChallengesModal } from '@/components/lobby/ChallengesModal'
 import { ChallengeToast } from '@/components/lobby/ChallengeToast'
 import { useChallenge } from '@/hooks/useChallenge'
 import { useChallengeNotifications } from '@/hooks/useChallengeNotifications'
-import { User } from '@/types/game.types'
+import { Player } from '@/types/game.types'
 import { ChallengeNotification } from '@/types/challenge.types'
 
 interface ClientHeaderProps {
-  user: User
+  user: Player
 }
 
 export function ClientHeader({ user }: ClientHeaderProps) {
