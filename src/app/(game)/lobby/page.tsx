@@ -12,6 +12,7 @@ import { Badge } from '@/components/ui/badge'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { UserService } from '@/lib/services/user.service'
 import { useChallenge } from '@/hooks/useChallenge'
+import { useChallengeAcceptance } from '@/hooks/useChallengeAcceptance'
 import { Player as User } from '@/types/game.types'
 import { Search, Users, Trophy, LogOut } from 'lucide-react'
 
@@ -38,6 +39,15 @@ export default function LobbyPage() {
     },
     onError: (error) => {
       setError(error)
+    }
+  })
+
+  // Listen for when challenges sent by this user are accepted
+  useChallengeAcceptance({
+    userId: user?.id || null,
+    onChallengeAccepted: (gameSessionId) => {
+      console.log('🎉 Challenge sent by this user was accepted, navigating to game:', gameSessionId)
+      router.push(`/game/${gameSessionId}`)
     }
   })
 

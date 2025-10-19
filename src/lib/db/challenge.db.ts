@@ -360,6 +360,27 @@ export async function acceptChallenge(challengeId: string, userId: string): Prom
       return null
     }
 
+    // Broadcast challenge acceptance to challenger via real-time
+    try {
+      console.log('📡 Broadcasting challenge acceptance to challenger:', challenge.challenger_id)
+      await supabase
+        .channel(`challenge-accepted-${challenge.challenger_id}`)
+        .send({
+          type: 'broadcast',
+          event: 'challenge_accepted',
+          payload: {
+            challengeId,
+            gameSessionId: gameSession.id,
+            challengedUserId: challenge.challenged_id,
+            message: 'Your challenge has been accepted! Joining game...'
+          }
+        })
+      console.log('✅ Challenge acceptance broadcast sent')
+    } catch (broadcastError) {
+      console.error('❌ Error broadcasting challenge acceptance:', broadcastError)
+      // Don't fail the whole operation if broadcast fails
+    }
+
     console.log('✅ Returning game session ID:', gameSession.id)
     return gameSession.id
   } catch (error) {
