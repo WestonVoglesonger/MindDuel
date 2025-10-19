@@ -309,7 +309,21 @@ export async function canUserChallenge(challengerId: string, challengedId: strin
 export async function acceptChallenge(challengeId: string, userId: string): Promise<string | null> {
   const supabase = createClient()
 
-  // First, update the challenge status
+  // First, get the challenge details
+  const { data: challenge, error: fetchError } = await supabase
+    .from('challenges')
+    .select('challenger_id, challenged_id')
+    .eq('id', challengeId)
+    .eq('challenged_id', userId)
+    .eq('status', 'pending')
+    .single()
+
+  if (fetchError || !challenge) {
+    console.error('Error fetching challenge:', fetchError)
+    return null
+  }
+
+  // Update the challenge status
   const { error: updateError } = await supabase
     .from('challenges')
     .update({
@@ -318,17 +332,31 @@ export async function acceptChallenge(challengeId: string, userId: string): Prom
       updated_at: new Date().toISOString()
     })
     .eq('id', challengeId)
-    .eq('challenged_id', userId)
-    .eq('status', 'pending')
 
   if (updateError) {
     console.error('Error accepting challenge:', updateError)
     return null
   }
 
-  // For now, return the challenge ID as the game session ID
-  // In a real implementation, you'd create a game session here
-  return challengeId
+  // Create a game session
+  try {
+    const { createGameSession } = await import('@/lib/db/game.db')
+    const gameSession = await createGameSession(
+      challenge.challenger_id,
+      challenge.challenged_id,
+      { status: 'waiting' }
+    )
+
+    if (!gameSession) {
+      console.error('Failed to create game session')
+      return null
+    }
+
+    return gameSession.id
+  } catch (error) {
+    console.error('Error creating game session:', error)
+    return null
+  }
 }
 
 /**
