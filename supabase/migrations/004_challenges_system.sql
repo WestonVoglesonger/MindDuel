@@ -45,16 +45,19 @@ CREATE POLICY "Users can view challenges where they are challenger or challenged
 CREATE POLICY "Users can insert challenges where they are the challenger" ON public.challenges
     FOR INSERT WITH CHECK (auth.uid() = challenger_id);
 
-CREATE POLICY "Users can update challenges where they are the challenged" ON public.challenges
+CREATE POLICY "Challenged users can update challenges" ON public.challenges
     FOR UPDATE USING (
-        auth.uid() = challenged_id AND 
-        status = 'pending'
+        auth.uid() = challenged_id
     );
 
-CREATE POLICY "Users can update their own challenges for cancellation" ON public.challenges
+CREATE POLICY "Challengers can update their challenges" ON public.challenges
     FOR UPDATE USING (
-        auth.uid() = challenger_id AND 
-        status = 'pending'
+        auth.uid() = challenger_id
+    );
+
+CREATE POLICY "Users can delete their own challenges" ON public.challenges
+    FOR DELETE USING (
+        auth.uid() = challenger_id OR auth.uid() = challenged_id
     );
 
 -- Create function to check if user can challenge another user
