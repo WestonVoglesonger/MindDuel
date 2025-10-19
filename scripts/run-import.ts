@@ -1,11 +1,11 @@
 #!/usr/bin/env tsx
 
-import { importCSVQuestions } from './import-csv-questions'
+import { addManualQuestions } from './add-manual-questions'
 
 async function main() {
-  console.log('🚀 Starting MindDuel CSV question import...')
+  console.log('🚀 Starting MindDuel manual question import...')
 
-  const result = await importCSVQuestions()
+  const result = await addManualQuestions()
 
   if (result.success) {
     console.log('✅ Import completed successfully!')
