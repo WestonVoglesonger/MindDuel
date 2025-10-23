@@ -32,8 +32,10 @@ export default function LoginPage() {
     console.log('handleLogin: Loading set to true')
     setError('')
 
-    console.log('handleLogin: Email:', email)
-    console.log('handleLogin: Password length:', password.length)
+  console.log('handleLogin: Email:', email)
+  console.log('handleLogin: Password length:', password.length)
+  console.log('handleLogin: Supabase URL:', process.env.NEXT_PUBLIC_SUPABASE_URL)
+  console.log('handleLogin: Supabase Key exists:', !!process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY)
 
     try {
       console.log('handleLogin: Creating timeout promise')
