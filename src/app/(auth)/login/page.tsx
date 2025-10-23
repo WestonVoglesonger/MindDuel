@@ -49,16 +49,19 @@ export default function LoginPage() {
       })
 
       console.log('handleLogin: Waiting for Promise.race')
-      const { data, error } = await Promise.race([authPromise, timeoutPromise]) as any
+      const result = await Promise.race([authPromise, timeoutPromise]) as {
+        data: { user: any } | null;
+        error: { message: string } | null
+      }
 
       console.log('handleLogin: Promise resolved')
-      console.log('handleLogin: Data:', data)
-      console.log('handleLogin: Error:', error)
+      console.log('handleLogin: Result:', result)
+      const { data, error } = result
 
       if (error) {
         console.log('handleLogin: Setting error message:', error.message)
         setError(error.message)
-      } else if (data.user) {
+      } else if (data && data.user) {
         console.log('handleLogin: Login successful, user:', data.user.id)
         // Wait a moment for the session to be established
         await new Promise(resolve => setTimeout(resolve, 100))
@@ -69,9 +72,10 @@ export default function LoginPage() {
         console.log('handleLogin: No error but no user data either')
         setError('Login failed - no user data received')
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('handleLogin: Caught exception:', error)
-      if (error.message === 'Request timeout') {
+      const err = error as Error
+      if (err.message === 'Request timeout') {
         console.log('handleLogin: Setting timeout error')
         setError('Login request timed out. Please try again.')
       } else {
@@ -101,7 +105,7 @@ export default function LoginPage() {
         setLoading(false)
       }
       // Note: OAuth redirects, so we don't set loading to false here
-    } catch (error: any) {
+    } catch (error: unknown) {
       setError('An unexpected error occurred')
       setLoading(false)
     }

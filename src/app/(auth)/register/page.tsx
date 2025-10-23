@@ -64,17 +64,22 @@ export default function RegisterPage() {
         }
       })
 
-      const { data, error } = await Promise.race([authPromise, timeoutPromise]) as any
+      const result = await Promise.race([authPromise, timeoutPromise]) as {
+        data: { user: any } | null;
+        error: { message: string } | null
+      }
+      const { data, error } = result
 
       if (error) {
         setError(error.message)
-      } else if (data.user) {
+      } else if (data && data.user) {
         // User created successfully, redirect to lobby
         router.push('/lobby')
         router.refresh()
       }
-    } catch (error: any) {
-      if (error.message === 'Request timeout') {
+    } catch (error: unknown) {
+      const err = error as Error
+      if (err.message === 'Request timeout') {
         setError('Registration request timed out. Please try again.')
       } else {
         setError('An unexpected error occurred')
@@ -99,7 +104,7 @@ export default function RegisterPage() {
       if (error) {
         setError(error.message)
       }
-    } catch (error) {
+    } catch (error: unknown) {
       setError('An unexpected error occurred')
     } finally {
       setLoading(false)
