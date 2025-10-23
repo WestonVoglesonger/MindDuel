@@ -12,6 +12,8 @@ import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Loader2 } from 'lucide-react'
 
 export default function LoginPage() {
+  console.log('LoginPage: Component rendered')
+
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [loading, setLoading] = useState(false)
@@ -19,40 +21,65 @@ export default function LoginPage() {
   const router = useRouter()
   const supabase = createClient()
 
+  console.log('LoginPage: State initialized - email:', email, 'password length:', password.length, 'loading:', loading, 'error:', error)
+
   const handleLogin = async (e: React.FormEvent) => {
+    console.log('handleLogin: Starting login process')
     e.preventDefault()
+    console.log('handleLogin: Form prevented default')
     setLoading(true)
+    console.log('handleLogin: Loading set to true')
     setError('')
 
+    console.log('handleLogin: Email:', email)
+    console.log('handleLogin: Password length:', password.length)
+
     try {
+      console.log('handleLogin: Creating timeout promise')
       // Create a timeout promise
       const timeoutPromise = new Promise((_, reject) => {
         setTimeout(() => reject(new Error('Request timeout')), 10000) // 10 second timeout
       })
 
+      console.log('handleLogin: Creating auth promise')
       // Race the auth request against the timeout
       const authPromise = supabase.auth.signInWithPassword({
         email,
         password,
       })
 
+      console.log('handleLogin: Waiting for Promise.race')
       const { data, error } = await Promise.race([authPromise, timeoutPromise]) as any
 
+      console.log('handleLogin: Promise resolved')
+      console.log('handleLogin: Data:', data)
+      console.log('handleLogin: Error:', error)
+
       if (error) {
+        console.log('handleLogin: Setting error message:', error.message)
         setError(error.message)
       } else if (data.user) {
+        console.log('handleLogin: Login successful, user:', data.user.id)
         // Wait a moment for the session to be established
         await new Promise(resolve => setTimeout(resolve, 100))
+        console.log('handleLogin: Redirecting to lobby')
         router.push('/lobby')
         router.refresh()
+      } else {
+        console.log('handleLogin: No error but no user data either')
+        setError('Login failed - no user data received')
       }
     } catch (error: any) {
+      console.error('handleLogin: Caught exception:', error)
       if (error.message === 'Request timeout') {
+        console.log('handleLogin: Setting timeout error')
         setError('Login request timed out. Please try again.')
       } else {
+        console.log('handleLogin: Setting unexpected error')
         setError('An unexpected error occurred')
       }
     } finally {
+      console.log('handleLogin: Finally block, setting loading to false')
       setLoading(false)
     }
   }
@@ -96,7 +123,7 @@ export default function LoginPage() {
             </Alert>
           )}
           
-          <form onSubmit={handleLogin} className="space-y-4">
+          <form onSubmit={(e) => { console.log('Form onSubmit triggered'); handleLogin(e); }} className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor="email">Email</Label>
               <Input
@@ -123,7 +150,12 @@ export default function LoginPage() {
               />
             </div>
             
-            <Button type="submit" className="w-full" disabled={loading}>
+            <Button
+              type="submit"
+              className="w-full"
+              disabled={loading}
+              onClick={() => console.log('Sign In button clicked')}
+            >
               {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
               {loading ? 'Signing in...' : 'Sign In'}
             </Button>
