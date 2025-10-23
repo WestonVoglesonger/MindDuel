@@ -10,6 +10,7 @@ import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Loader2 } from 'lucide-react'
+import type { User } from '@supabase/supabase-js'
 
 export default function RegisterPage() {
   const [email, setEmail] = useState('')
@@ -65,7 +66,7 @@ export default function RegisterPage() {
       })
 
       const result = await Promise.race([authPromise, timeoutPromise]) as {
-        data: { user: any } | null;
+        data: { user: User } | null;
         error: { message: string } | null
       }
       const { data, error } = result
@@ -94,17 +95,17 @@ export default function RegisterPage() {
     setError('')
 
     try {
-      const { error } = await supabase.auth.signInWithOAuth({
+      const response = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
           redirectTo: `${window.location.origin}/lobby`
         }
       })
 
-      if (error) {
-        setError(error.message)
+      if (response.error) {
+        setError(response.error.message)
       }
-    } catch (error: unknown) {
+    } catch {
       setError('An unexpected error occurred')
     } finally {
       setLoading(false)

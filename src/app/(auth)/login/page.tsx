@@ -10,6 +10,7 @@ import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Loader2 } from 'lucide-react'
+import type { User } from '@supabase/supabase-js'
 
 export default function LoginPage() {
   console.log('LoginPage: Component rendered')
@@ -50,7 +51,7 @@ export default function LoginPage() {
 
       console.log('handleLogin: Waiting for Promise.race')
       const result = await Promise.race([authPromise, timeoutPromise]) as {
-        data: { user: any } | null;
+        data: { user: User } | null;
         error: { message: string } | null
       }
 
@@ -93,19 +94,19 @@ export default function LoginPage() {
     setError('')
 
     try {
-      const { error } = await supabase.auth.signInWithOAuth({
+      const response = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
           redirectTo: `${window.location.origin}/lobby`
         }
       })
 
-      if (error) {
-        setError(error.message)
+      if (response.error) {
+        setError(response.error.message)
         setLoading(false)
       }
       // Note: OAuth redirects, so we don't set loading to false here
-    } catch (error: unknown) {
+    } catch {
       setError('An unexpected error occurred')
       setLoading(false)
     }
