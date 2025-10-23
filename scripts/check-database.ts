@@ -56,7 +56,7 @@ async function checkDatabase() {
     } else {
       console.log(`❓ Questions (${questions.length}):`)
       questions.forEach(q => {
-        console.log(`   - [${q.point_value}] ${q.question_text.substring(0, 60)}... (${q.categories.name})`)
+        console.log(`   - [${q.point_value}] ${q.question_text.substring(0, 60)}... (${q.categories[0]?.name || 'Unknown'})`)
       })
     }
 
