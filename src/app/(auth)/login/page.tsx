@@ -9,6 +9,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Alert, AlertDescription } from '@/components/ui/alert'
+import { Loader2 } from 'lucide-react'
 
 export default function LoginPage() {
   const [email, setEmail] = useState('')
@@ -24,10 +25,18 @@ export default function LoginPage() {
     setError('')
 
     try {
-      const { data, error } = await supabase.auth.signInWithPassword({
+      // Create a timeout promise
+      const timeoutPromise = new Promise((_, reject) => {
+        setTimeout(() => reject(new Error('Request timeout')), 10000) // 10 second timeout
+      })
+
+      // Race the auth request against the timeout
+      const authPromise = supabase.auth.signInWithPassword({
         email,
         password,
       })
+
+      const { data, error } = await Promise.race([authPromise, timeoutPromise]) as any
 
       if (error) {
         setError(error.message)
@@ -37,8 +46,12 @@ export default function LoginPage() {
         router.push('/lobby')
         router.refresh()
       }
-    } catch {
-      setError('An unexpected error occurred')
+    } catch (error: any) {
+      if (error.message === 'Request timeout') {
+        setError('Login request timed out. Please try again.')
+      } else {
+        setError('An unexpected error occurred')
+      }
     } finally {
       setLoading(false)
     }
@@ -58,10 +71,11 @@ export default function LoginPage() {
 
       if (error) {
         setError(error.message)
+        setLoading(false)
       }
-    } catch {
+      // Note: OAuth redirects, so we don't set loading to false here
+    } catch (error: any) {
       setError('An unexpected error occurred')
-    } finally {
       setLoading(false)
     }
   }
@@ -110,6 +124,7 @@ export default function LoginPage() {
             </div>
             
             <Button type="submit" className="w-full" disabled={loading}>
+              {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
               {loading ? 'Signing in...' : 'Sign In'}
             </Button>
           </form>

@@ -9,6 +9,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Alert, AlertDescription } from '@/components/ui/alert'
+import { Loader2 } from 'lucide-react'
 
 export default function RegisterPage() {
   const [email, setEmail] = useState('')
@@ -46,8 +47,13 @@ export default function RegisterPage() {
     }
 
     try {
-      // Sign up user
-      const { data, error } = await supabase.auth.signUp({
+      // Create a timeout promise
+      const timeoutPromise = new Promise((_, reject) => {
+        setTimeout(() => reject(new Error('Request timeout')), 10000) // 10 second timeout
+      })
+
+      // Sign up user with timeout
+      const authPromise = supabase.auth.signUp({
         email,
         password,
         options: {
@@ -58,6 +64,8 @@ export default function RegisterPage() {
         }
       })
 
+      const { data, error } = await Promise.race([authPromise, timeoutPromise]) as any
+
       if (error) {
         setError(error.message)
       } else if (data.user) {
@@ -65,8 +73,12 @@ export default function RegisterPage() {
         router.push('/lobby')
         router.refresh()
       }
-    } catch (error) {
-      setError('An unexpected error occurred')
+    } catch (error: any) {
+      if (error.message === 'Request timeout') {
+        setError('Registration request timed out. Please try again.')
+      } else {
+        setError('An unexpected error occurred')
+      }
     } finally {
       setLoading(false)
     }
@@ -180,6 +192,7 @@ export default function RegisterPage() {
             </div>
             
             <Button type="submit" className="w-full" disabled={loading}>
+              {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
               {loading ? 'Creating account...' : 'Create Account'}
             </Button>
           </form>
