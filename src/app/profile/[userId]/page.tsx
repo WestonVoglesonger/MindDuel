@@ -8,19 +8,20 @@ import { Trophy, Target, Calendar, TrendingUp } from 'lucide-react'
 import Link from 'next/link'
 
 interface ProfilePageProps {
-  params: {
+  params: Promise<{
     userId: string
-  }
+  }>
 }
 
 export default async function ProfilePage({ params }: ProfilePageProps) {
+  const { userId } = await params
   const supabase = await createClient()
   const { data: { user: authUser } } = await supabase.auth.getUser()
   const userService = new UserService()
 
-  const user = await userService.getUserById(params.userId)
-  const stats = await userService.getUserGameStats(params.userId)
-  const matchHistory = await userService.getUserMatchHistory(params.userId, 10)
+  const user = await userService.getUserById(userId)
+  const stats = await userService.getUserGameStats(userId)
+  const matchHistory = await userService.getUserMatchHistory(userId, 10)
 
   if (!user) {
     return (
